@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,15 +12,19 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
-
+    @Setter
+    @Getter
     private Map<Long, User> users = new HashMap<>();
 
     private long getNextId() {
@@ -35,19 +42,20 @@ public class UserController {
             }
 
             if (user.getLogin() == null || user.getLogin().trim().isEmpty() || user.getLogin().contains(" ")) {
-                log.error("Валидация ен пройдена: Логин не может быть пустым и не может содержать пробелы.");
+                log.error("Валидация не пройдена: Логин не может быть пустым и не может содержать пробелы.");
                 throw new ValidationException("Логин не может быть пустым и не может содержать пробелы.");
             }
 
-            //тут я не понимаю как добавить обработку исключения, если дата рождения будет в будущем
-            // у меня валидация past стоит и когда делаю проверку ругается, что тип не тот(принимает только true и false)
-        /*
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date birthDate = sdf.parse(String.valueOf(user.getBirthDate()));
+                if (birthDate.after(new Date())) {
+                    throw new ValidationException("Дата рождения не может быть в будущем.");
+                }
+            } catch (ParseException e) {
+                throw new ValidationException("Неверный формат даты рождения.");
+            }
 
-        if (user.getBirthDate() == null || user.getBirthDate().after(new Date())) {
-        throw new ValidationException("Дата рождения не может быть в будущем.");
-        }
-
-         */
 
             if (user.getName() == null || user.getName().isBlank()) {
                 user.setName(user.getLogin());
@@ -79,14 +87,10 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<User> getUser(@PathVariable Long id) {
         log.info("Запрос на получение пользователя с ID: {}", id);
-        User user = users.get(id);
-        if (user == null) {
-            log.warn("Пользователь с ID {} не найден", id);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        log.info("Пользователь найден: {}", user);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        Optional<User> optionalUser = Optional.ofNullable(users.get(id));
+        return optionalUser.map(user -> new ResponseEntity<>(user, HttpStatus.OK)).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         log.info("Запрос на удаление пользователя с ID: {}", id);

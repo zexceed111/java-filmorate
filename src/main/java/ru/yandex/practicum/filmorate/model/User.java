@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Setter
 @Getter
 @Data
@@ -22,5 +24,5 @@ public class User {
     private String name;
     @NotNull(message = "Дата рождения не может быть пустой.")
     @Past(message = "Дата рождения не может быть в будущем.")
-    private int birthDay;
+    private LocalDate birthDate;
 }

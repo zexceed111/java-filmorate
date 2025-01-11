@@ -1,20 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import lombok.extern.slf4j.Slf4j;
-
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.User;
 
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,53 +16,34 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    @Setter
-    @Getter
-    private Map<Long, User> users = new HashMap<>();
+
+    private final Map<Long, User> users = new HashMap<>();
 
     private long getNextId() {
         long currentMaxId = users.keySet().stream().mapToLong(id -> id).max().orElse(0);
         return ++currentMaxId;
     }
 
-    @PostMapping("/users")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+
+    @PostMapping
+    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
         log.info("Запрос на создание пользователя: {}", user);
-        try {
-            if (user.getEmail() == null || !user.getEmail().contains("@")) {
-                log.error("Валидация не пройдена: Электронная почта не может быть пустой и должна содержать символ '@'.");
-                throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ '@'.");
-            }
 
-            if (user.getLogin() == null || user.getLogin().trim().isEmpty() || user.getLogin().contains(" ")) {
-                log.error("Валидация не пройдена: Логин не может быть пустым и не может содержать пробелы.");
-                throw new ValidationException("Логин не может быть пустым и не может содержать пробелы.");
-            }
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            try {
-                Date birthDate = sdf.parse(String.valueOf(user.getBirthDate()));
-                if (birthDate.after(new Date())) {
-                    throw new ValidationException("Дата рождения не может быть в будущем.");
-                }
-            } catch (ParseException e) {
-                throw new ValidationException("Неверный формат даты рождения.");
-            }
-
-
-            if (user.getName() == null || user.getName().isBlank()) {
-                user.setName(user.getLogin());
-                log.info("Имя пользователя {}", user.getName());
-            }
-            user.setId(getNextId());
-            log.info("Пользователь добавлен: {}", user);
-            users.put(user.getId(), user);
-            return new ResponseEntity<>(user, HttpStatus.CREATED);
-        } catch (ValidationException e) {
-            log.error("Ошибка при добавлении пользователся: {}", e.getMessage());
-            throw e;
+        if (user == null) {
+            throw new ValidationException("Запрос не содержит данные пользователя.");
         }
+        try {
+            user.validateBirthDate();
+            user.setId(getNextId());
+            users.put(user.getId(), user);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(e.getMessage());
+        }
+
+        log.info("Пользователь добавлен: {}", user);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {

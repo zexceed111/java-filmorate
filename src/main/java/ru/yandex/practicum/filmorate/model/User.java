@@ -4,7 +4,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-import java.util.Date;
+
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,10 +17,10 @@ public class User {
     @NotBlank(message = "Электронная почта не может быть пустой и должна содержать символ '@'.")
     @Email(message = "Электронная почта должна быть корректной.")
     private String email;
-    @NotBlank (message = "Логин не может быть пустым и не может содержать пробелы.")
+    @NotBlank(message = "Логин не может быть пустым и не может содержать пробелы.")
     private String login;
     private String name;
     @NotNull(message = "Дата рождения не может быть пустой.")
     @Past(message = "Дата рождения не может быть в будущем.")
-    private int birthday;
+    private int birthDay;
 }

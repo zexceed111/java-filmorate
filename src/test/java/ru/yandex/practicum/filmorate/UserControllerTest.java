@@ -19,7 +19,7 @@ public class UserControllerTest {
 
     @Test
     public void createUser_validUser_success() {
-        User user = new User(1,"test@example.com", "testuser", "Kostya",  LocalDate.of(2000, 1, 1));
+        User user = new User(1, "test@example.com", "testuser", "Kostya", LocalDate.of(2000, 1, 1));
         ResponseEntity<User> response = userController.createUser(user);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -32,28 +32,28 @@ public class UserControllerTest {
 
     @Test
     public void createUser_emptyLogin_throwsValidationException() {
-        User user = new User(1,"test@example.com", "", "kostya", LocalDate.of(2000, 1, 1));
+        User user = new User(1, "test@example.com", "", "kostya", LocalDate.of(2000, 1, 1));
         assertThrows(ValidationException.class, () -> userController.createUser(user));
     }
 
 
     @Test
     public void createUser_invalidEmail_throwsValidationException() {
-        User user = new User(1,"", "testuser", "Kostya", LocalDate.of(2000, 1, 1));
+        User user = new User(1, "", "testuser", "Kostya", LocalDate.of(2000, 1, 1));
         assertThrows(ValidationException.class, () -> userController.createUser(user));
     }
 
 
     @Test
     public void createUser_futureBirthDate_throwsValidationException() {
-        User user = new User(1,"test@example.com", "testuser", "kostya", LocalDate.now().plusYears(1));
+        User user = new User(1, "test@example.com", "testuser", "kostya", LocalDate.now().plusYears(1));
         assertThrows(ValidationException.class, () -> userController.createUser(user));
     }
 
     @Test
     public void getUser_existingUser_success() {
         // Инициализируйте тестовый пользователь в контроллере
-        User user = new User(1,"test@example.com", "testuser", "kostya", LocalDate.of(2000, 1, 1));
+        User user = new User(1, "test@example.com", "testuser", "kostya", LocalDate.of(2000, 1, 1));
         userController.createUser(user);
 
         ResponseEntity<User> response = userController.getUser(user.getId());
@@ -71,9 +71,9 @@ public class UserControllerTest {
 
     @Test
     public void updateUser_existingUser_success() {
-        User user = new User(1,"test@example.com", "testuser", "kostya", LocalDate.of(2000, 1, 1));
+        User user = new User(1, "test@example.com", "testuser", "kostya", LocalDate.of(2000, 1, 1));
         userController.createUser(user);
-        User updatedUser = new User(1,"updatedEmail@example.com", "UpDatetestuser","kostya", LocalDate.of(2001, 2, 3));
+        User updatedUser = new User(1, "updatedEmail@example.com", "UpDatetestuser", "kostya", LocalDate.of(2001, 2, 3));
         updatedUser.setId(user.getId());
         ResponseEntity<User> response = userController.updateUser(user.getId(), updatedUser);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -82,14 +82,14 @@ public class UserControllerTest {
 
     @Test
     public void updateUser_nonExistingUser_notFound() {
-        User updatedUser = new User(3,"updatedEmail@example.com", "UpDatetestuser","kostya", LocalDate.of(2001, 2, 3));
+        User updatedUser = new User(3, "updatedEmail@example.com", "UpDatetestuser", "kostya", LocalDate.of(2001, 2, 3));
         ResponseEntity<User> response = userController.updateUser(1L, updatedUser);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
     void deleteUser_existingUser_success() {
-        User user = new User(1,"test@example.com", "testuser","kostya", LocalDate.of(2000, 1, 1));
+        User user = new User(1, "test@example.com", "testuser", "kostya", LocalDate.of(2000, 1, 1));
         userController.createUser(user);
         ResponseEntity<Void> response = userController.deleteUser(user.getId());
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());

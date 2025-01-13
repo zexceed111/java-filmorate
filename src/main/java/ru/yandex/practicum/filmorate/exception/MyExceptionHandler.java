@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 public class MyExceptionHandler {
 
-    @ExceptionHandler({ValidationException.class, DuplicateData.class, NotFoundException.class})
+    @ExceptionHandler({ValidationException.class, DuplicateDataException.class, NotFoundException.class})
     public ResponseEntity<Object> handler(ValidationException e) {
         StackTraceElement sElem = e.getStackTrace()[0];
         String className = sElem.getClassName();

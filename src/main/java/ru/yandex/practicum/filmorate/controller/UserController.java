@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.DuplicateData;
+import ru.yandex.practicum.filmorate.exception.DuplicateDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -30,11 +30,11 @@ public class UserController {
     public @ResponseBody User create(@Valid @RequestBody User user) {
         if (isUsedLogin(user.getLogin())) {
             log.warn("\nNot created {}", user);
-            throw new DuplicateData("Этот login уже используется", user);
+            throw new DuplicateDataException("Этот login уже используется", user);
         }
         if (isUsedEmail(user.getEmail())) {
             log.warn("\nNot created {}", user);
-            throw new DuplicateData("Этот e-mail уже используется", user);
+            throw new DuplicateDataException("Этот e-mail уже используется", user);
         }
         user.setId(getNextId());
         if (user.getName() == null || !StringUtils.hasText(user.getName())) {
@@ -59,7 +59,7 @@ public class UserController {
             }
             if (!oldUser.getLogin().equals(newUser.getLogin()) && isUsedLogin(newUser.getLogin())) {
                 log.warn("\nNot updated {}", newUser);
-                throw new DuplicateData("Этот login уже используется", newUser);
+                throw new DuplicateDataException("Этот login уже используется", newUser);
             }
             if (newUser.getEmail() == null || newUser.getEmail().isBlank() || !newUser.getEmail().contains("@") || newUser.getEmail().indexOf("@") != newUser.getEmail().lastIndexOf("@")) {
                 log.warn("\nNot updated {}", newUser);
@@ -67,7 +67,7 @@ public class UserController {
             }
             if (!oldUser.getEmail().equals(newUser.getEmail()) && isUsedEmail(newUser.getEmail())) {
                 log.warn("\nNot updated {}", newUser);
-                throw new DuplicateData("Этот e-mail уже используется", newUser);
+                throw new DuplicateDataException("Этот e-mail уже используется", newUser);
             }
 
             if (newUser.getBirthday() != null) {

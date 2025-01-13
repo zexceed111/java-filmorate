@@ -1,11 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -13,63 +11,62 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Slf4j
 @RestController
+@Slf4j
 @RequestMapping("/films")
 public class FilmController {
+    // строго говоря, первый публичный сеанс братья Люмьер провели 22.03.1895,
+    // но задание есть задание
+    private static final LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);
+    private static final int maxDescriptionLength = 200;
+    public static Map<Long, Film> films = new HashMap<>();
 
-    private Map<Long, Film> films = new HashMap<>();
+    @GetMapping
+    public Collection<Film> findAll() {
+        return films.values();
+    }
 
-    private long getNextId() {
+    @PostMapping
+    public static @ResponseBody Film create(@Valid @RequestBody Film film) {
+        film.setId(getNextId());
+        films.put(film.getId(), film);
+        log.info("\nSuccessfully created {}", film);
+        return film;
+    }
+
+    @PutMapping
+    public @ResponseBody Film update(@RequestBody Film newFilm) {
+        if (newFilm.getId() == null) {
+            log.info("\nNot updated {}", newFilm);
+            throw new NotFoundException("Id должен быть указан", newFilm);
+        }
+        if (films.containsKey(newFilm.getId())) {
+            Film oldFilm = films.get(newFilm.getId());
+            if (newFilm.getName() != null || !newFilm.getName().isBlank()) {
+                oldFilm.setName(newFilm.getName());
+            }
+            if (newFilm.getReleaseDate() != null) {
+                try {
+                    if (!newFilm.getReleaseDate().isBefore(cinemaBirthday)) {
+                        oldFilm.setReleaseDate(newFilm.getReleaseDate());
+                    }
+                } catch (RuntimeException e) {
+                    log.info("\nIllegal release date ignored {}", newFilm);
+                }
+            }
+            if (newFilm.getDescription().length() <= maxDescriptionLength)
+                oldFilm.setDescription(newFilm.getDescription());
+            if (newFilm.getDuration() > 0) oldFilm.setDuration(newFilm.getDuration());
+            log.info("\nSuccessfully updated {}", oldFilm);
+            return oldFilm;
+        }
+        log.info("\nNot updated {}", newFilm);
+        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден", newFilm);
+    }
+
+    private static long getNextId() {
         long currentMaxId = films.keySet().stream().mapToLong(id -> id).max().orElse(0);
         return ++currentMaxId;
     }
 
-    @PostMapping
-    public ResponseEntity<Film> addFilm(@RequestBody Film film) {
-        try {
-            if (film.getName() == null || film.getName().isBlank()) {
-                log.error("Валидация не пройдена: название фильма не может быть пустым.");
-                throw new ValidationException("название фильма не может быть пустым.");
-            }
-            if (film.getDescription() != null && film.getDescription().length() > 200) {
-                log.error("Валидация не пройдена: описание фильма не может превышать 200 символов.");
-                throw new ValidationException("максимальная длина описания — 200 символов");
-            }
-            if (film.getDuration() <= 0) {
-                log.error("Валидация не пройдена: продолжительность фильма должна быть положительным числом.");
-                throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
-            }
-
-            LocalDate releaseDate = (LocalDate) film.getReleaseDate();
-            LocalDate minReleaseDate = LocalDate.of(1895, 12, 28);
-            if (releaseDate == null || releaseDate.isBefore(minReleaseDate)) {
-                log.error("Валидация не пройдена: дата релиза не может быть раньше 28 декабря 1895 года.");
-                throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года.");
-            }
-            film.setId(getNextId());
-            films.put(film.getId(), film);
-            log.info("Фильм добавлен: {}", film);
-            return new ResponseEntity<>(film, HttpStatus.CREATED);
-        } catch (ValidationException e) {
-            log.error("Ошибка при добавлении фильма: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Film> updateFilm(@PathVariable Long id, @RequestBody Film film) {
-        if (!films.containsKey(id)) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        film.setId(id);
-        films.put(id, film);
-        log.info("Фильм обновлен {}", films);
-        return new ResponseEntity<>(film, HttpStatus.OK);
-    }
-
-    @GetMapping
-    public ResponseEntity<Collection<Film>> getAllFilms() {
-        return new ResponseEntity<>(films.values(), HttpStatus.OK);
-    }
 }

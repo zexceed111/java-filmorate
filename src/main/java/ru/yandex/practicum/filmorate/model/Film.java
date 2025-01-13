@@ -1,24 +1,41 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.validators.ReleaseDateConstraint;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Past;
+import java.time.LocalDate;
 
-@Getter
-@Setter
+/**
+ * Film.
+ */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Film {
-    private long id;
-    @NotBlank(message = "название фильма не может быть пустым.")
-    private String name;
-    @NotBlank(message = "максимальная длина описания — 200 символов")
-    private String description;
-    @Past(message = "дата релиза фильма — не раньше 28 декабря 1895 года")
-    private Object releaseDate;
-    @NotBlank(message = "продолжительность фильма должна быть положительным числом.")
-    private int duration;
+
+    Long id;
+
+    @NotBlank(message = "Название фильма не может быть пустым")
+    String name;
+
+    @Size(message = "Слишком длинное описание фильма (более 200 символов)", max = 200)
+    String description;
+
+    @ReleaseDateConstraint(message = "Некорректная дата релиза фильма")
+    LocalDate releaseDate;
+
+    @NotNull(message = "Продолжительность фильма должна быть положительным числом")
+    @Positive(message = "Продолжительность фильма должна быть положительным числом")
+    Long duration;
+
+    public Film(String name, String description, LocalDate localDate, long duration) {
+        this.name = name;
+        this.description = description;
+        this.releaseDate = localDate;
+        this.duration = duration;
+    }
 
 }

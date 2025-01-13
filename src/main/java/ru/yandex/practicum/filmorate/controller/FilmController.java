@@ -45,15 +45,15 @@ public class FilmController {
             if (newFilm.getName() != null || !newFilm.getName().isBlank()) {
                 oldFilm.setName(newFilm.getName());
             }
-            if (newFilm.getReleaseDate() != null) {
-                try {
-                    if (!newFilm.getReleaseDate().isBefore(cinemaBirthday)) {
-                        oldFilm.setReleaseDate(newFilm.getReleaseDate());
-                    }
-                } catch (RuntimeException e) {
-                    log.info("\nIllegal release date ignored {}", newFilm);
+                if (newFilm.getReleaseDate() != null) {
+                        if (!newFilm.getReleaseDate().isBefore(cinemaBirthday)) {
+                            oldFilm.setReleaseDate(newFilm.getReleaseDate());
+                        }else {
+                            log.info("\nIllegal release date ignored {}", newFilm);
+                        }
+                    //типо так сделать явную проверку ?
+
                 }
-            }
             if (newFilm.getDescription().length() <= maxDescriptionLength)
                 oldFilm.setDescription(newFilm.getDescription());
             if (newFilm.getDuration() > 0) oldFilm.setDuration(newFilm.getDuration());

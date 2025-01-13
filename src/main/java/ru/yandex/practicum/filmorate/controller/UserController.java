@@ -46,7 +46,7 @@ public class UserController {
     }
 
     @PutMapping
-    public @ResponseBody User update(@RequestBody User newUser) throws ValidationException {
+    public @ResponseBody User update(@Valid @RequestBody User newUser) throws ValidationException {
         if (newUser.getId() == null) {
             log.warn("\nNot updated {}", newUser);
             throw new ValidationException("Id должен быть указан", newUser);

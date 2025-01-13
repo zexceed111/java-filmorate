@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.exception.DuplicateData;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import org.springframework.util.StringUtils;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
@@ -36,7 +37,7 @@ public class UserController {
             throw new DuplicateData("Этот e-mail уже используется", user);
         }
         user.setId(getNextId());
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (user.getName() == null || StringUtils.hasText(user.getName())) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);

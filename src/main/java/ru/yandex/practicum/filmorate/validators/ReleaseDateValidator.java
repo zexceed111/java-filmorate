@@ -5,7 +5,8 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.time.LocalDate;
 
-public class ReleaseDateValidator implements ConstraintValidator<ReleaseDateConstraint, LocalDate> {
+public class ReleaseDateValidator implements
+        ConstraintValidator<ReleaseDateConstraint, LocalDate> {
     private final LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);
 
     @Override
@@ -14,7 +15,8 @@ public class ReleaseDateValidator implements ConstraintValidator<ReleaseDateCons
     }
 
     @Override
-    public boolean isValid(LocalDate releaseDate, ConstraintValidatorContext cxt) {
+    public boolean isValid(LocalDate releaseDate,
+                           ConstraintValidatorContext cxt) {
         System.out.println(releaseDate);
         if (releaseDate == null) {
             return false;

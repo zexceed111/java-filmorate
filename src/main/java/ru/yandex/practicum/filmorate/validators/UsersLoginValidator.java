@@ -3,7 +3,8 @@ package ru.yandex.practicum.filmorate.validators;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class UsersLoginValidator implements ConstraintValidator<UsersLoginConstraint, String> {
+public class UsersLoginValidator implements
+        ConstraintValidator<UsersLoginConstraint, String> {
 
     @Override
     public void initialize(UsersLoginConstraint login) {

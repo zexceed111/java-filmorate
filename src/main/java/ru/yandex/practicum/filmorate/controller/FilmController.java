@@ -25,13 +25,11 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> findFilms(@RequestParam(required = false, defaultValue = "10") @Positive long count) {
-        log.info("\nGetting {} most popular films", count);
         return filmService.getPopularFilms(count);
     }
 
     @PutMapping("/{id}/like/{userId}")
     public List<User> addUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) {
-        log.info("\nAdding of like to film {} from user {}", id, userId);
         return filmService.addUsersLike(id, userId);
     }
 
@@ -56,12 +54,7 @@ public class FilmController {
 
     @PutMapping
     public @ResponseBody Film update(@RequestBody Film newFilm) {
-        // проверяем необходимые условия
-        log.info("\nUpdating of {}", newFilm);
-        if (newFilm.getId() == null) {
-            log.info("\nNot updated {}", newFilm);
-            throw new NotFoundException("Id фильма должен быть указан: " + newFilm, newFilm);
-        }
+        log.info("Updating film {}", newFilm);
         return filmService.modifyFilm(newFilm);
     }
 

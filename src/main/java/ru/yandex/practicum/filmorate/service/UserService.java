@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
@@ -46,35 +47,36 @@ public class UserService {
     }
 
     public User changeUsersData(User user) {
-        //Оставляем только подготовку данных для внесения изменений. Корректные данные принимаем, вместо некорректных
-        //оставляем null, не заглядывая при этом в хранилище. Предполагается, что класс-хранитель заменит ненулевые
-        //поля, проверив дополнительно, не заняты ли login и e-mail
+        if (user.getId() == null) {
+            throw new ValidationException("Id пользователя должен быть указан", user);
+        }
+
         User preparedUser = new User();
         preparedUser.setId(user.getId());
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("\nUsers new invalid login will be not updated {}", user);
-        } else {
+
+        if (user.getLogin() != null && !user.getLogin().isBlank() && !user.getLogin().contains(" ")) {
             preparedUser.setLogin(user.getLogin());
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@") ||
-                user.getEmail().indexOf("@") != user.getEmail().lastIndexOf("@")) {
-            log.warn("\nUsers new invalid e-mail will be not updated {}", user);
         } else {
+            log.warn("Invalid login, not updating: {}", user);
+        }
+
+        if (user.getEmail() != null && user.getEmail().contains("@")) {
             preparedUser.setEmail(user.getEmail());
+        } else {
+            log.warn("Invalid email, not updating: {}", user);
         }
-        try {
-            if (!LocalDate.now().isBefore(user.getBirthday())) {
-                preparedUser.setBirthday(user.getBirthday());
-            } else {
-                log.warn("\nUsers new invalid birthday will be not updated {}", user);
-            }
-        } catch (RuntimeException e) {
-            log.warn("\nUsers new invalid birthday will be not updated {}", user);
+
+        if (user.getBirthday() != null && !LocalDate.now().isBefore(user.getBirthday())) {
+            preparedUser.setBirthday(user.getBirthday());
         }
-        if (user.getName() == null || user.getName().isBlank()) {
-            preparedUser.setName(user.getLogin());
-        } else
+
+        if (user.getName() != null && !user.getName().isBlank()) {
             preparedUser.setName(user.getName());
+        } else {
+            preparedUser.setName(user.getLogin());
+        }
+
+        log.info("Successfully updated user: {}", preparedUser);
         return inMemoryUserStorage.modifyUser(preparedUser);
     }
 

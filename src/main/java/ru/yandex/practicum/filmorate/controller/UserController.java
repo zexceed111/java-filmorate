@@ -35,12 +35,8 @@ public class UserController {
     }
 
     @PutMapping
-    public @ResponseBody User update(@RequestBody User renewedUser) {
-        log.info("\nUpdating user {}", renewedUser);
-        if (renewedUser.getId() == null) {
-            log.warn("\nNot updated {}", renewedUser);
-            throw new NotFoundException("Id пользователя должен быть указан" + renewedUser, renewedUser);
-        }
+    public @ResponseBody User update(@Valid @RequestBody User renewedUser) {
+        log.info("Updating user {}", renewedUser);
         return userService.changeUsersData(renewedUser);
     }
 

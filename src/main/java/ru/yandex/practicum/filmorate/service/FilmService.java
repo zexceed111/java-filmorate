@@ -29,42 +29,44 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(long count) {
+        log.info("Fetching top {} popular films", count);
         return getAll().stream()
-                .sorted(new Comparator<Film>() {
-                    public int compare(Film f1, Film f2) {
-                        return (-(f1.getUsersLikes().size() - f2.getUsersLikes().size()));
-                    }
-                })
+                .sorted(Comparator.comparingInt(f -> -f.getUsersLikes().size()))
                 .limit(count)
                 .toList();
     }
 
     public Film addNewFilm(Film newFilm) {
         newFilm.setId(inMemoryFilmStorage.getNextId());
+        log.debug("Adding new film: {}", newFilm);
         return inMemoryFilmStorage.addNewFilm(newFilm.getId(), newFilm);
     }
 
     public Film modifyFilm(Film film) {
+        if (film.getId() == null) {
+            throw new NotFoundException("Id фильма должен быть указан: " + film, film);
+        }
+
         Film preparedFilm = new Film();
         preparedFilm.setId(film.getId());
-        //Корректные данные будут изменены, некорректные - проигнорированы
-        if (film.getName() != null || !film.getName().isBlank()) {
+
+        if (film.getName() != null && !film.getName().isBlank()) {
             preparedFilm.setName(film.getName());
         }
-        // проверяем валидность даты релиза
-        if (film.getReleaseDate() != null) {
-            try {
-                if (!film.getReleaseDate().isBefore(cinemaBirthday)) {
-                    preparedFilm.setReleaseDate(film.getReleaseDate());
-                }
-            } catch (RuntimeException e) {
-                log.info("\nIllegal release date ignored {}", film);
-            }
+
+        if (film.getReleaseDate() != null && !film.getReleaseDate().isBefore(cinemaBirthday)) {
+            preparedFilm.setReleaseDate(film.getReleaseDate());
         }
-        if (film.getDescription().length() <= maxDescriptionLength)
+
+        if (film.getDescription() != null && film.getDescription().length() <= maxDescriptionLength) {
             preparedFilm.setDescription(film.getDescription());
-        if (film.getDuration() > 0)
+        }
+
+        if (film.getDuration() != null && film.getDuration() > 0) {
             preparedFilm.setDuration(film.getDuration());
+        }
+
+        log.info("Фильм успешно обновлен: {}", preparedFilm);
         return inMemoryFilmStorage.changeFilm(preparedFilm);
     }
 
@@ -72,7 +74,7 @@ public class FilmService {
         if (inMemoryFilmStorage.films.containsKey(filmId)) {
             inMemoryFilmStorage.deleteFilm(filmId);
         } else {
-            throw new NotFoundException("Not found film with id= " + filmId, filmId);
+            throw new NotFoundException("Не найден фильм с идентификатором = " + filmId, filmId);
         }
     }
 

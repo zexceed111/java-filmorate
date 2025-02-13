@@ -7,6 +7,7 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class LocalDateAdapter extends TypeAdapter<LocalDate> {
     static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -21,7 +22,10 @@ public class LocalDateAdapter extends TypeAdapter<LocalDate> {
 
     @Override
     public LocalDate read(JsonReader jsonReader) throws IOException {
-        //Подумать как перехватить и выдать ValidationException
-        return LocalDate.parse(jsonReader.nextString(), dateTimeFormatter);
+        try {
+            return LocalDate.parse(jsonReader.nextString(), dateTimeFormatter);
+        } catch (DateTimeParseException e) {
+            throw new IOException("Invalid date format. Expected format: " + dateTimeFormatter.toString(), e);
+        }
     }
 }

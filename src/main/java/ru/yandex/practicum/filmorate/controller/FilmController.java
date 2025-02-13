@@ -1,72 +1,76 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @RestController
 @Slf4j
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    // строго говоря, первый публичный сеанс братья Люмьер провели 22.03.1895,
-    // но задание есть задание
-    private static final LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);
-    private static final int maxDescriptionLength = 200;
-    public static Map<Long, Film> films = new HashMap<>();
+
+    private final FilmService filmService;
+
+    @GetMapping("/popular")
+    public Collection<Film> findFilms(@RequestParam(required = false, defaultValue = "10") @Positive long count) {
+        log.info("\nGetting {} most popular films", count);
+        return filmService.getPopularFilms(count);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public List<User> addUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) {
+        log.info("\nAdding of like to film {} from user {}", id, userId);
+        return filmService.addUsersLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public List<User> deleteUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) {
+        log.info("\nDeleting of like to film {} from user {}", id, userId);
+        return filmService.deleteUsersLike(id, userId);
+    }
 
     @GetMapping
-    public Collection<Film> findAll() {
-        return films.values();
+    public List<Film> findAll() {
+        return filmService.getAll();
     }
 
     @PostMapping
-    public static @ResponseBody Film create(@Valid @RequestBody Film film) {
-        film.setId(getNextId());
-        films.put(film.getId(), film);
+    public @ResponseBody Film create(@Valid @RequestBody Film film) {
+        log.info("\nCreation of {}", film);
+        film = filmService.addNewFilm(film);
         log.info("\nSuccessfully created {}", film);
         return film;
     }
 
     @PutMapping
     public @ResponseBody Film update(@RequestBody Film newFilm) {
+        // проверяем необходимые условия
+        log.info("\nUpdating of {}", newFilm);
         if (newFilm.getId() == null) {
             log.info("\nNot updated {}", newFilm);
-            throw new NotFoundException("Id должен быть указан", newFilm);
+            throw new NotFoundException("Id фильма должен быть указан: " + newFilm, newFilm);
         }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getName() != null || !newFilm.getName().isBlank()) {
-                oldFilm.setName(newFilm.getName());
-            }
-            if (newFilm.getReleaseDate() != null) {
-                if (!newFilm.getReleaseDate().isBefore(cinemaBirthday)) {
-                    oldFilm.setReleaseDate(newFilm.getReleaseDate());
-                } else {
-                    log.info("\nIllegal release date ignored {}", newFilm);
-                }
-                //типо так сделать явную проверку ?
-
-            }
-            if (newFilm.getDescription().length() <= maxDescriptionLength)
-                oldFilm.setDescription(newFilm.getDescription());
-            if (newFilm.getDuration() > 0) oldFilm.setDuration(newFilm.getDuration());
-            log.info("\nSuccessfully updated {}", oldFilm);
-            return oldFilm;
-        }
-        log.info("\nNot updated {}", newFilm);
-        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден", newFilm);
+        return filmService.modifyFilm(newFilm);
     }
 
-    private static long getNextId() {
-        long currentMaxId = films.keySet().stream().mapToLong(id -> id).max().orElse(0);
-        return ++currentMaxId;
+    @DeleteMapping
+    public ResponseEntity<String> delete(@RequestParam @Positive long id) {
+        log.info("\nDeleting of film id={}", id);
+        filmService.deleteFilm(id);
+        log.info("\nSuccessfully deleted {}", id);
+        return new ResponseEntity<>("Successfully deleted film: id=" + id, HttpStatus.OK);
     }
 
 }

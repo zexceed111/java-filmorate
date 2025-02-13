@@ -27,9 +27,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (!films.containsKey(filmId)) {
             throw new NotFoundException("Film with id=" + filmId + " not found", filmId);
         }
-        return films.get(filmId).getUsersLikes().stream()
-                .map(inMemoryUserStorage.getUsers()::get)
-                .toList();
+        return films.get(filmId).getUsersLikes().stream().map(inMemoryUserStorage.getUsers()::get).toList();
     }
 
     @Override
@@ -54,14 +52,10 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Фильм с id = " + film.getId() + " не найден", film);
         }
         Film oldFilm = films.get(film.getId());
-        if (film.getName() != null)
-            oldFilm.setName(film.getName());
-        if (film.getReleaseDate() != null)
-            oldFilm.setReleaseDate(film.getReleaseDate());
-        if (film.getDescription() != null)
-            oldFilm.setDescription(film.getDescription());
-        if (film.getDuration() != null)
-            oldFilm.setDuration(film.getDuration());
+        if (film.getName() != null) oldFilm.setName(film.getName());
+        if (film.getReleaseDate() != null) oldFilm.setReleaseDate(film.getReleaseDate());
+        if (film.getDescription() != null) oldFilm.setDescription(film.getDescription());
+        if (film.getDuration() != null) oldFilm.setDuration(film.getDuration());
         films.put(oldFilm.getId(), oldFilm);
         log.info("\nSuccessfully changed {}", oldFilm);
         return oldFilm;
@@ -102,11 +96,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
+        long currentMaxId = films.keySet().stream().mapToLong(id -> id).max().orElse(0);
         return ++currentMaxId;
     }
 

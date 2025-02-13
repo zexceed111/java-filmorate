@@ -26,9 +26,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (!users.containsKey(userId)) {
             throw new NotFoundException("User with id= " + userId + " not found", userId);
         }
-        return users.get(userId).getFriends().stream()
-                .map(users::get)
-                .toList();
+        return users.get(userId).getFriends().stream().map(users::get).toList();
     }
 
     @Override
@@ -40,10 +38,7 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("User with id= " + l2 + " not found", l2);
         }
 
-        return users.get(l1).getFriends().stream()
-                .filter(l -> users.get(l2).getFriends().contains(l))
-                .map(users::get)
-                .toList();
+        return users.get(l1).getFriends().stream().filter(l -> users.get(l2).getFriends().contains(l)).map(users::get).toList();
     }
 
     @Override
@@ -89,10 +84,8 @@ public class InMemoryUserStorage implements UserStorage {
                 oldUser.setEmail(user.getEmail());
             }
         }
-        if (user.getName() != null)
-            oldUser.setName(user.getName());
-        if (user.getBirthday() != null)
-            oldUser.setBirthday(user.getBirthday());
+        if (user.getName() != null) oldUser.setName(user.getName());
+        if (user.getBirthday() != null) oldUser.setBirthday(user.getBirthday());
         //корректные данные занесены в oldUser
         users.put(oldUser.getId(), oldUser);
         log.info("\nSuccessfully updated {}.", user);
@@ -151,26 +144,16 @@ public class InMemoryUserStorage implements UserStorage {
     //Далее вспомогательные методы
     public boolean isUsedLogin(String login) {
         //Метод проверяет, не занят ли логин другим пользователем
-        return users.keySet()
-                .stream()
-                .map(users::get)
-                .anyMatch(user -> user.getLogin().equals(login));
+        return users.keySet().stream().map(users::get).anyMatch(user -> user.getLogin().equals(login));
     }
 
     public boolean isUsedEmail(String email) {
         //Метод проверяет, не занят ли e-mail другим пользователем
-        return users.keySet()
-                .stream()
-                .map(users::get)
-                .anyMatch(user -> user.getEmail().equals(email));
+        return users.keySet().stream().map(users::get).anyMatch(user -> user.getEmail().equals(email));
     }
 
     public long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
+        long currentMaxId = users.keySet().stream().mapToLong(id -> id).max().orElse(0);
         return ++currentMaxId;
     }
 }

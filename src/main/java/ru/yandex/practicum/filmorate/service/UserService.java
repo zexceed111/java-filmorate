@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.DuplicateDataException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -23,11 +25,11 @@ public class UserService {
     }
 
 
-    public List<User> getCommonFriends(Long first, Long second) {
+    public List<User> getCommonFriends(Long first, Long second) throws NotFoundException {
         return inMemoryUserStorage.getCommonFriends(first, second);
     }
 
-    public List<User> getUsersFriends(Long userId) {
+    public List<User> getUsersFriends(Long userId) throws NotFoundException {
         return inMemoryUserStorage.getFriends(userId);
     }
 
@@ -35,7 +37,7 @@ public class UserService {
         return inMemoryUserStorage.findAll().stream().toList();
     }
 
-    public User createUser(User user) {
+    public User createUser(User user) throws DuplicateDataException {
 
         // формируем дополнительные данные
         user.setId(inMemoryUserStorage.getNextId());
@@ -46,7 +48,7 @@ public class UserService {
         return inMemoryUserStorage.addNewUser(user);
     }
 
-    public User changeUsersData(User user) {
+    public User changeUsersData(User user) throws ValidationException {
         if (user.getId() == null) {
             throw new ValidationException("Id пользователя должен быть указан", user);
         }
@@ -80,11 +82,11 @@ public class UserService {
         return inMemoryUserStorage.modifyUser(preparedUser);
     }
 
-    public List<User> makeNewFriendsPair(long l1, long l2) {
+    public List<User> makeNewFriendsPair(long l1, long l2) throws NotFoundException {
         return inMemoryUserStorage.setNewFriendship(l1, l2);
     }
 
-    public List<User> deleteFromFriends(Long first, Long second) {
+    public List<User> deleteFromFriends(Long first, Long second) throws NotFoundException {
         return inMemoryUserStorage.deleteFriendship(first, second);
     }
 

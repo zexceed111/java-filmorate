@@ -22,7 +22,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getFriends(long userId) {
+    public List<User> getFriends(long userId) throws NotFoundException {
         if (!users.containsKey(userId)) {
             throw new NotFoundException("User with id= " + userId + " not found", userId);
         }
@@ -30,7 +30,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getCommonFriends(long l1, long l2) {
+    public List<User> getCommonFriends(long l1, long l2) throws NotFoundException {
         if (!users.containsKey(l1)) {
             throw new NotFoundException("User with id= " + l1 + " not found", l1);
         }
@@ -42,7 +42,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User addNewUser(User newUser) {
+    public User addNewUser(User newUser) throws DuplicateDataException {
         if (isUsedLogin(newUser.getLogin())) {
             log.warn("\nNot created {}", newUser);
             throw new DuplicateDataException("Login уже используется " + newUser, newUser);
@@ -62,7 +62,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User modifyUser(User user) {
+    public User modifyUser(User user) throws NotFoundException, DuplicateDataException {
         if (!users.containsKey(user.getId())) {
             log.warn("\nNot updated {}", user);
             throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден", user.getId());
@@ -93,7 +93,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> setNewFriendship(Long l1, Long l2) {
+    public List<User> setNewFriendship(Long l1, Long l2) throws NotFoundException {
         if (!users.containsKey(l1)) {
             throw new NotFoundException("Not found user id= ", l1);
         }
@@ -119,7 +119,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> deleteFriendship(long l1, long l2) {
+    public List<User> deleteFriendship(long l1, long l2) throws NotFoundException {
         if (!users.containsKey(l1)) {
             throw new NotFoundException("Not found user id= ", l1);
         }

@@ -29,12 +29,12 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public List<User> addUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) {
+    public List<User> addUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) throws NotFoundException {
         return filmService.addUsersLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public List<User> deleteUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) {
+    public List<User> deleteUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) throws NotFoundException {
         log.info("\nDeleting of like to film {} from user {}", id, userId);
         return filmService.deleteUsersLike(id, userId);
     }
@@ -53,13 +53,13 @@ public class FilmController {
     }
 
     @PutMapping
-    public @ResponseBody Film update(@RequestBody Film newFilm) {
+    public @ResponseBody Film update(@RequestBody Film newFilm) throws NotFoundException {
         log.info("Updating film {}", newFilm);
         return filmService.modifyFilm(newFilm);
     }
 
     @DeleteMapping
-    public ResponseEntity<String> delete(@RequestParam @Positive long id) {
+    public ResponseEntity<String> delete(@RequestParam @Positive long id) throws NotFoundException {
         log.info("\nDeleting of film id={}", id);
         filmService.deleteFilm(id);
         log.info("\nSuccessfully deleted {}", id);

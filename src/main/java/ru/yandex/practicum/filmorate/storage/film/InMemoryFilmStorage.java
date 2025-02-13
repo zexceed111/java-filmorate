@@ -23,11 +23,19 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     //В задании этого метода не было, но он потребовался по ходу выполнения
-    public List<User> getFilmsLikes(Long filmId) {
+    public List<User> getFilmsLikes(Long filmId) throws NotFoundException {
         if (!films.containsKey(filmId)) {
             throw new NotFoundException("Film with id=" + filmId + " not found", filmId);
         }
         return films.get(filmId).getUsersLikes().stream().map(inMemoryUserStorage.getUsers()::get).toList();
+    }
+
+    @Override
+    public List<Film> getPopularFilms(long count) {
+        return films.values().stream()
+                .sorted(Comparator.comparingInt(f -> -f.getUsersLikes().size()))
+                .limit(count)
+                .toList();
     }
 
     @Override
@@ -46,7 +54,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film changeFilm(Film film) {
+    public Film changeFilm(Film film) throws NotFoundException {
         if (!films.containsKey(film.getId())) {
             log.info("\nNot updated {}", film);
             throw new NotFoundException("Фильм с id = " + film.getId() + " не найден", film);
@@ -62,7 +70,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<User> addLike(Long filmId, Long userId) {
+    public List<User> addLike(Long filmId, Long userId) throws NotFoundException {
         if (!films.containsKey(filmId)) {
             throw new NotFoundException("Film with id=" + filmId + " not found", filmId);
         }
@@ -79,7 +87,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<User> deleteLike(Long filmId, Long userId) {
+    public List<User> deleteLike(Long filmId, Long userId) throws NotFoundException {
         if (!films.containsKey(filmId)) {
             throw new NotFoundException("Film with id=" + filmId + " not found", filmId);
         }

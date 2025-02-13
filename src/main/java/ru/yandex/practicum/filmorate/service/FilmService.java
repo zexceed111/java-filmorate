@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -13,16 +14,12 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
-
     private static final LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);
     private static final int maxDescriptionLength = 200;
 
     private final InMemoryFilmStorage inMemoryFilmStorage;
-
-    public FilmService(InMemoryFilmStorage inMemoryFilmStorage) {
-        this.inMemoryFilmStorage = inMemoryFilmStorage;
-    }
 
     public List<Film> getAll() {
         return inMemoryFilmStorage.getAllFilms().stream().toList();
@@ -30,10 +27,7 @@ public class FilmService {
 
     public List<Film> getPopularFilms(long count) {
         log.info("Fetching top {} popular films", count);
-        return getAll().stream()
-                .sorted(Comparator.comparingInt(f -> -f.getUsersLikes().size()))
-                .limit(count)
-                .toList();
+        return inMemoryFilmStorage.getPopularFilms(count);
     }
 
     public Film addNewFilm(Film newFilm) {
@@ -42,7 +36,7 @@ public class FilmService {
         return inMemoryFilmStorage.addNewFilm(newFilm.getId(), newFilm);
     }
 
-    public Film modifyFilm(Film film) {
+    public Film modifyFilm(Film film) throws NotFoundException {
         if (film.getId() == null) {
             throw new NotFoundException("Id фильма должен быть указан: " + film, film);
         }
@@ -56,6 +50,8 @@ public class FilmService {
 
         if (film.getReleaseDate() != null && !film.getReleaseDate().isBefore(cinemaBirthday)) {
             preparedFilm.setReleaseDate(film.getReleaseDate());
+        } else {
+            log.warn("Invalid release date ignored: {}", film.getReleaseDate());
         }
 
         if (film.getDescription() != null && film.getDescription().length() <= maxDescriptionLength) {
@@ -70,7 +66,7 @@ public class FilmService {
         return inMemoryFilmStorage.changeFilm(preparedFilm);
     }
 
-    public void deleteFilm(Long filmId) {
+    public void deleteFilm(Long filmId) throws NotFoundException {
         if (inMemoryFilmStorage.films.containsKey(filmId)) {
             inMemoryFilmStorage.deleteFilm(filmId);
         } else {
@@ -78,11 +74,11 @@ public class FilmService {
         }
     }
 
-    public List<User> addUsersLike(Long filmId, Long userId) {
+    public List<User> addUsersLike(Long filmId, Long userId) throws NotFoundException {
         return inMemoryFilmStorage.addLike(filmId, userId);
     }
 
-    public List<User> deleteUsersLike(Long filmId, Long userId) {
+    public List<User> deleteUsersLike(Long filmId, Long userId) throws NotFoundException {
         return inMemoryFilmStorage.deleteLike(filmId, userId);
     }
 

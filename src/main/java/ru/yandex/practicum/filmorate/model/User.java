@@ -17,7 +17,7 @@ import java.util.TreeSet;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
-    Long id; // уникальный идентификатор пользователя,
+    private Long id; // уникальный идентификатор пользователя,
 
     @Email(message = "Некорректный e-mail пользователя")
     @NotBlank(message = "Некорректный e-mail пользователя") //неожиданно оказалось, что @Email не ловит ""

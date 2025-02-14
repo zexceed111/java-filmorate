@@ -10,12 +10,24 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 public class MyExceptionHandler {
 
-    @ExceptionHandler({ValidationException.class, DuplicateDataException.class, NotFoundException.class})
+    @ExceptionHandler({ValidationException.class, DuplicateDataException.class})
     public ResponseEntity<Object> handler(ValidationException e) {
         StackTraceElement sElem = e.getStackTrace()[0];
         String className = sElem.getClassName();
         String str = className.substring(className.lastIndexOf(".") + 1);
-        log.info("\nClass: {}; Method: {}; Line: {}; \nMessage: {}", str, sElem.getMethodName(), sElem.getLineNumber(), e.getMessage());
-        return new ResponseEntity<>(e.getObjForBody(), e.getClass().equals(NotFoundException.class) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.BAD_REQUEST);
+        log.info("\nClass: {}; Method: {}; Line: {}; \nMessage: {}",
+                str, sElem.getMethodName(), sElem.getLineNumber(), e.getMessage());
+        return new ResponseEntity<>(e.getObjForBody(), HttpStatus.BAD_REQUEST);
+    }
+
+    //Решил разнести в разные методы, так вроде нагляднее
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handler(NotFoundException e) {
+        StackTraceElement sElem = e.getStackTrace()[0];
+        String className = sElem.getClassName();
+        String str = className.substring(className.lastIndexOf(".") + 1);
+        log.info("\nClass: {}; Method: {}; Line: {}; \nMessage: {}",
+                str, sElem.getMethodName(), sElem.getLineNumber(), e.getMessage());
+        return new ResponseEntity<>(e.getObjForBody(), HttpStatus.NOT_FOUND);
     }
 }

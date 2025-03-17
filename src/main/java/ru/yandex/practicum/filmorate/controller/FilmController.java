@@ -4,16 +4,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmRequest;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @Slf4j
@@ -21,49 +19,67 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FilmController {
 
+    @Autowired
     private final FilmService filmService;
 
-    @GetMapping("/popular")
-    public Collection<Film> findFilms(@RequestParam(required = false, defaultValue = "10") @Positive long count) {
-        return filmService.getPopularFilms(count);
-    }
-
-    @PutMapping("/{id}/like/{userId}")
-    public List<User> addUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) throws NotFoundException {
-        return filmService.addUsersLike(id, userId);
-    }
-
-    @DeleteMapping("/{id}/like/{userId}")
-    public List<User> deleteUsersLike(@PathVariable @Positive long id, @PathVariable @Positive long userId) throws NotFoundException {
-        log.info("\nDeleting of like to film {} from user {}", id, userId);
-        return filmService.deleteUsersLike(id, userId);
-    }
-
-    @GetMapping
-    public List<Film> findAll() {
-        return filmService.getAll();
-    }
-
     @PostMapping
-    public @ResponseBody Film create(@Valid @RequestBody Film film) {
-        log.info("\nCreation of {}", film);
-        film = filmService.addNewFilm(film);
-        log.info("\nSuccessfully created {}", film);
-        return film;
+    @ResponseStatus(HttpStatus.CREATED)
+    public FilmDto create(@Valid @RequestBody FilmRequest request) {
+        log.info("\nCreation of {}", request);
+        FilmDto fd = filmService.addNewFilm(request);
+        log.info("Created {}", fd);
+        return fd;
     }
 
     @PutMapping
-    public @ResponseBody Film update(@RequestBody Film newFilm) throws NotFoundException {
-        log.info("Updating film {}", newFilm);
-        return filmService.modifyFilm(newFilm);
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto update(@Valid @RequestBody FilmRequest request) {
+        log.info("\nUpdating of {}", request);
+        FilmDto fd = filmService.modifyFilm(request);
+        log.info("Created {}", fd);
+        return fd;
     }
 
-    @DeleteMapping
-    public ResponseEntity<String> delete(@RequestParam @Positive long id) throws NotFoundException {
-        log.info("\nDeleting of film id={}", id);
-        filmService.deleteFilm(id);
-        log.info("\nSuccessfully deleted {}", id);
-        return new ResponseEntity<>("Successfully deleted film: id=" + id, HttpStatus.OK);
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto deleteFilm(@Valid @PathVariable("id") @Positive(message = "Films Id must be positive") long id) {
+        log.info("\nDeleting of film id = {}", id);
+        return filmService.deleteFilm(id);
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public List<FilmDto> findAll() {
+        return filmService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto findOneFilm(@Valid @PathVariable("id") @Positive(message = "Films Id must be positive") long id) {
+        return filmService.getFilm(id);
+    }
+
+    @GetMapping("/popular")
+    @ResponseStatus(HttpStatus.OK)
+    public List<FilmDto> findFilms(@Valid @RequestParam(required = false, defaultValue = "10") @Positive Long count) {
+        log.info("\nGetting {} most popular films", count);
+        return filmService.getPopularFilms(count);
+    }
+
+    @PutMapping("/{filmId}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto addUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long filmId,
+                                @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
+        log.info("\nAdding of like to film {} from user {}", filmId, userId);
+        return filmService.addUsersLike(filmId, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public FilmDto deleteUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long id,
+                                   @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
+        log.info("\nDeleting of like to film {} from user {}", id, userId);
+        return filmService.deleteUsersLike(id, userId);
     }
 
 }

@@ -46,8 +46,7 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> addFriends(@PathVariable @Positive(message = "Users Id must be positive") long id,
-                                    @PathVariable @Positive(message = "Users Id must be positive") long friendId) {
+    public List<UserDto> addFriends(@PathVariable @Positive(message = "Users Id must be positive") long id, @PathVariable @Positive(message = "Users Id must be positive") long friendId) {
         log.info("\nMaking {} as friend {}", id, friendId);
         if (id == friendId) {
             log.warn("\nNot added friends {} and {} because identifiers are equal", id, friendId);
@@ -58,8 +57,7 @@ public class UserController {
 
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> killFriendship(@PathVariable @Positive(message = "Users Id must be positive") long id,
-                                        @PathVariable @Positive(message = "Users Id must be positive") long friendId) {
+    public List<UserDto> killFriendship(@PathVariable @Positive(message = "Users Id must be positive") long id, @PathVariable @Positive(message = "Users Id must be positive") long friendId) {
         log.info("\nDelete {} as friend {}", id, friendId);
         if (id == friendId) {
             log.warn("\nNot deleted friendship between {} and {} because identifiers are equal", id, friendId);
@@ -77,8 +75,7 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> getCommonFriends(@PathVariable @Positive(message = "Users Id must be positive") long id,
-                                          @PathVariable @Positive(message = "Users Id must be positive") long otherId) {
+    public List<UserDto> getCommonFriends(@PathVariable @Positive(message = "Users Id must be positive") long id, @PathVariable @Positive(message = "Users Id must be positive") long otherId) {
         log.info("\nGetting common friends {} and {}", id, otherId);
         if (id == otherId) {
             log.warn("\nList common friends {} and {} is impossible because identifiers are equal", id, otherId);

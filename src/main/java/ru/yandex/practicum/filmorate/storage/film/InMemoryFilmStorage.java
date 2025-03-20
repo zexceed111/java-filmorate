@@ -27,24 +27,18 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopular(long count) {
-        return films.keySet().stream()
-                .map(i -> films.get(i))
-                .sorted(new Comparator<Film>() {
-                    public int compare(Film f1, Film f2) {
-                        return (-(f1.getUsersLikes().size() - f2.getUsersLikes().size()));
-                    }
-                })
-                .limit(count)
-                .toList();
+        return films.keySet().stream().map(i -> films.get(i)).sorted(new Comparator<Film>() {
+            public int compare(Film f1, Film f2) {
+                return (-(f1.getUsersLikes().size() - f2.getUsersLikes().size()));
+            }
+        }).limit(count).toList();
     }
 
     public List<User> getFilmsLikes(Long filmId) {
         if (!films.containsKey(filmId)) {
             throw new NotFoundException("Film with id=" + filmId + " not found", filmId);
         }
-        return films.get(filmId).getUsersLikes().stream()
-                .map(inMemoryUserStorage.getUsers()::get)
-                .toList();
+        return films.get(filmId).getUsersLikes().stream().map(inMemoryUserStorage.getUsers()::get).toList();
     }
 
     @Override
@@ -67,14 +61,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film changeFilm(Film film) {
         Film oldFilm = films.get(film.getId());
-        if (film.getName() != null)
-            oldFilm.setName(film.getName());
-        if (film.getReleaseDate() != null)
-            oldFilm.setReleaseDate(film.getReleaseDate());
-        if (film.getDescription() != null)
-            oldFilm.setDescription(film.getDescription());
-        if (film.getDuration() != null)
-            oldFilm.setDuration(film.getDuration());
+        if (film.getName() != null) oldFilm.setName(film.getName());
+        if (film.getReleaseDate() != null) oldFilm.setReleaseDate(film.getReleaseDate());
+        if (film.getDescription() != null) oldFilm.setDescription(film.getDescription());
+        if (film.getDuration() != null) oldFilm.setDuration(film.getDuration());
         films.put(oldFilm.getId(), oldFilm);
         log.info("\nSuccessfully changed {}", oldFilm);
         return oldFilm;
@@ -109,11 +99,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
+        long currentMaxId = films.keySet().stream().mapToLong(id -> id).max().orElse(0);
         return ++currentMaxId;
     }
 
@@ -130,10 +116,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Optional<Film> findFilmWithLike(Long filmId, Long userId) {
-        return
-                films.get(filmId).getUsersLikes().contains(userId)
-                        ? Optional.ofNullable(films.get(filmId))
-                        : Optional.empty();
+        return films.get(filmId).getUsersLikes().contains(userId) ? Optional.ofNullable(films.get(filmId)) : Optional.empty();
     }
 
 }

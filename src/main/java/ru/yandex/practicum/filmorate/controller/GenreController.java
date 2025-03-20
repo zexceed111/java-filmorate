@@ -28,8 +28,7 @@ public class GenreController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public GenreDto update(@PathVariable("genreId") @Positive(message = "Genre Id must be positive") long id,
-                           @Valid @RequestBody GenreRequest request) {
+    public GenreDto update(@PathVariable("genreId") @Positive(message = "Genre Id must be positive") long id, @Valid @RequestBody GenreRequest request) {
         log.info("\nUpdating genre {}", id);
         return genreService.changeGenreData(id, request);
     }

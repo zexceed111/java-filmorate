@@ -24,9 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (!users.containsKey(userId)) {
             throw new NotFoundException("User with id= " + userId + " not found", userId);
         }
-        return users.get(userId).getFriends().stream()
-                .map(users::get)
-                .toList();
+        return users.get(userId).getFriends().stream().map(users::get).toList();
     }
 
     @Override
@@ -38,10 +36,7 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("User with id= " + l2 + " not found", l2);
         }
 
-        return users.get(l1).getFriends().stream()
-                .filter(l -> users.get(l2).getFriends().contains(l))
-                .map(users::get)
-                .toList();
+        return users.get(l1).getFriends().stream().filter(l -> users.get(l2).getFriends().contains(l)).map(users::get).toList();
     }
 
     @Override
@@ -80,10 +75,8 @@ public class InMemoryUserStorage implements UserStorage {
                 oldUser.setEmail(user.getEmail());
             }
         }
-        if (user.getName() != null)
-            oldUser.setName(user.getName());
-        if (user.getBirthday() != null)
-            oldUser.setBirthday(user.getBirthday());
+        if (user.getName() != null) oldUser.setName(user.getName());
+        if (user.getBirthday() != null) oldUser.setBirthday(user.getBirthday());
         //корректные данные занесены в oldUser
         users.put(oldUser.getId(), oldUser);
         log.info("\nSuccessfully updated {}.", user);
@@ -108,8 +101,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.info("\nSuccessfully updated friend {}.", user);
             return users.get(l2);
         } else
-            throw new DuplicateDataException("Пользователь " + l2 + "уже является другом пользователя " + l1,
-                    users.get(l2));
+            throw new DuplicateDataException("Пользователь " + l2 + "уже является другом пользователя " + l1, users.get(l2));
     }
 
     @Override
@@ -138,26 +130,16 @@ public class InMemoryUserStorage implements UserStorage {
     //Далее вспомогательные методы
     public boolean isUsedLogin(String login) {
         //Метод проверяет, не занят ли логин другим пользователем
-        return users.keySet()
-                .stream()
-                .map(users::get)
-                .anyMatch(user -> user.getLogin().equals(login));
+        return users.keySet().stream().map(users::get).anyMatch(user -> user.getLogin().equals(login));
     }
 
     public boolean isUsedEmail(String email) {
         //Метод проверяет, не занят ли e-mail другим пользователем
-        return users.keySet()
-                .stream()
-                .map(users::get)
-                .anyMatch(user -> user.getEmail().equals(email));
+        return users.keySet().stream().map(users::get).anyMatch(user -> user.getEmail().equals(email));
     }
 
     public long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
+        long currentMaxId = users.keySet().stream().mapToLong(id -> id).max().orElse(0);
         return ++currentMaxId;
     }
 
@@ -169,26 +151,18 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Optional<User> findByEmail(String email) {
-        return users.keySet().stream()
-                .map(users::get)
-                .filter(user -> user.getEmail().equals(email))
-                .findFirst();
+        return users.keySet().stream().map(users::get).filter(user -> user.getEmail().equals(email)).findFirst();
     }
 
     @Override
     public Optional<User> findByLogin(String login) {
-        return users.keySet().stream()
-                .map(users::get)
-                .filter(user -> user.getLogin().equals(login))
-                .findFirst();
+        return users.keySet().stream().map(users::get).filter(user -> user.getLogin().equals(login)).findFirst();
     }
 
     @Override
     public boolean isFriendPairExist(long l1, long l2) {
-        if (!users.containsKey(l1))
-            return false;
-        else
-            return users.get(l1).getFriends().contains(l2);
+        if (!users.containsKey(l1)) return false;
+        else return users.get(l1).getFriends().contains(l2);
     }
 
 }

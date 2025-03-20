@@ -29,32 +29,20 @@ public class RatingDbStorage extends BaseRepository<Rating> implements RatingSto
 
     @Override
     public Rating createRating(Rating rating) {
-        insert(
-                CREATE_RATING_QUERY,
-                rating.getName(),
-                rating.getDescription()
-        );
-        return findByName(rating.getName())
-                .orElseThrow(() -> new InternalServerException("Ошибка при чтении данных rating"));
+        insert(CREATE_RATING_QUERY, rating.getName(), rating.getDescription());
+        return findByName(rating.getName()).orElseThrow(() -> new InternalServerException("Ошибка при чтении данных rating"));
     }
 
     @Override
     public Rating modifyRating(Rating rating) {
-        update(
-                MODIFY_RATING_QUERY,
-                rating.getName(),
-                rating.getDescription(),
-                rating.getId()
-        );
+        update(MODIFY_RATING_QUERY, rating.getName(), rating.getDescription(), rating.getId());
         return rating;
     }
 
     @Override
     public Rating deleteRating(Rating rating) {
-        if (delete(DELETE_RATING_QUERY, rating.getId()))
-            return rating;
-        else
-            throw new InternalServerException("Не удалось удалить " + rating);
+        if (delete(DELETE_RATING_QUERY, rating.getId())) return rating;
+        else throw new InternalServerException("Не удалось удалить " + rating);
     }
 
     @Override

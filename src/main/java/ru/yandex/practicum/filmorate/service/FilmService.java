@@ -35,11 +35,7 @@ public class FilmService {
     private final GenreDbStorage genreDbStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("filmGenreDbStorage") FilmGenreStorage filmGenreStorage,
-                       @Qualifier("ratingDbStorage") RatingStorage ratingStorage,
-                       GenreDbStorage genreDbStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmGenreDbStorage") FilmGenreStorage filmGenreStorage, @Qualifier("ratingDbStorage") RatingStorage ratingStorage, GenreDbStorage genreDbStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.filmGenreStorage = filmGenreStorage;
@@ -49,15 +45,11 @@ public class FilmService {
 
     public FilmDto addNewFilm(FilmRequest request) {
         //Больше подходит NotFound, но тест Postman ожидает ошибку 400
-        Rating mpa = ratingStorage.findById(request.getMpa().getId())
-                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА"));
+        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА"));
         Set<Genre> genreSet = new HashSet<>();
         if (request.getGenres() != null) {
             for (Genre g : request.getGenres()) {
-                genreSet.add(
-                        genreDbStorage.findById(g.getId())
-                                .orElseThrow(() -> new ValidationException("Ошибочный id жанра"))
-                );
+                genreSet.add(genreDbStorage.findById(g.getId()).orElseThrow(() -> new ValidationException("Ошибочный id жанра")));
             }
         }
         log.warn("\nSet of Long {}", genreSet);
@@ -71,8 +63,7 @@ public class FilmService {
         Long id = request.getId();
         log.warn("Value of {}", id);
         filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Film " + request + " not found", request));
-        Rating mpa = ratingStorage.findById(request.getMpa().getId())
-                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА"));
+        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА"));
         Film film = FilmMapper.mapToFilm(request);
         film.setId(id);
         Set<Genre> genreSet = new HashSet<>();
@@ -86,64 +77,47 @@ public class FilmService {
     }
 
     public FilmDto deleteFilm(Long filmId) {
-        Film film = filmStorage.findById(filmId)
-                .orElseThrow(() -> new NotFoundException("Not found film with id= " + filmId, filmId));
-        Rating mpa = ratingStorage.findById(film.getMpaId())
-                .orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Not found film with id= " + filmId, filmId));
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
         return FilmMapper.mapToFilmDto(filmStorage.deleteFilm(film), mpa);
     }
 
     public List<FilmDto> getAll() {
-        return filmStorage.getAll().stream()
-                .map(film -> FilmMapper.mapToFilmDto(film, ratingStorage.findById(film.getMpaId())
-                        .orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"))))
-                .toList();
+        return filmStorage.getAll().stream().map(film -> FilmMapper.mapToFilmDto(film, ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА")))).toList();
     }
 
     public FilmDto getFilm(long id) {
-        Film film = filmStorage.findById(id).orElseThrow(() ->
-                new NotFoundException("Film id " + id + " not found", id));
+        Film film = filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Film id " + id + " not found", id));
         log.warn("Found {}", film);
-        Rating mpa = ratingStorage.findById(film.getMpaId())
-                .orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
         List<Genre> genres = genreDbStorage.findByFilmId(film.getId());
         return FilmMapper.mapToFilmDtoWithGenre(film, mpa, genres);
     }
 
     public List<FilmDto> getPopularFilms(long count) {
-        return filmStorage.getPopular(count).stream()
-                .map(film -> FilmMapper.mapToFilmDto(film, ratingStorage.findById(film.getMpaId())
-                        .orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"))))
-                .toList();
+        return filmStorage.getPopular(count).stream().map(film -> FilmMapper.mapToFilmDto(film, ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА")))).toList();
 
     }
 
     public FilmDto addUsersLike(Long filmId, Long userId) {
-        Film film = filmStorage.findById(filmId).orElseThrow(() ->
-                new NotFoundException("Film " + filmId + " not found", filmId));
-        userStorage.findById(userId).orElseThrow(() ->
-                new NotFoundException("User id = " + userId + " not exist", userId));
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Film " + filmId + " not found", filmId));
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("User id = " + userId + " not exist", userId));
         if (filmStorage.findFilmWithLike(filmId, userId).isPresent()) {
             log.warn("\nLike of film {} by user {} already exists", filmId, userId);
-            throw new DuplicateDataException("Like of film " + filmId + " by user " + userId +
-                    " already exists.", filmId);
+            throw new DuplicateDataException("Like of film " + filmId + " by user " + userId + " already exists.", filmId);
         }
-        Rating mpa = ratingStorage.findById(film.getMpaId())
-                .orElseThrow(() -> new NotFoundException("Рейтинг MPA с id " + film.getMpaId() + " не найден."));
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new NotFoundException("Рейтинг MPA с id " + film.getMpaId() + " не найден."));
         return FilmMapper.mapToFilmDto(filmStorage.addLike(filmId, userId), mpa);
     }
 
     public FilmDto deleteUsersLike(Long filmId, Long userId) {
-        Film film = filmStorage.findById(filmId).orElseThrow(() ->
-                new NotFoundException("Film " + filmId + " not found", filmId));
-        userStorage.findById(userId).orElseThrow(() ->
-                new NotFoundException("User id = " + userId + " not exist", userId));
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Film " + filmId + " not found", filmId));
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("User id = " + userId + " not exist", userId));
         if (filmStorage.findFilmWithLike(filmId, userId).isEmpty()) {
             log.warn("\nLike of film {} by user {} not exists", filmId, userId);
             throw new NotFoundException("Like of film " + filmId + " by user " + userId + " not exists.", filmId);
         }
-        Rating mpa = ratingStorage.findById(film.getMpaId())
-                .orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
         return FilmMapper.mapToFilmDto(filmStorage.deleteLike(filmId, userId), mpa);
     }
 

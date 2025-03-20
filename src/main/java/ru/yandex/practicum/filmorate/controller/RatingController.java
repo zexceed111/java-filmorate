@@ -31,8 +31,7 @@ public class RatingController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public RatingDto update(@PathVariable("rating") @Positive(message = "Rating's Id must be positive") long id,
-                            @Valid @RequestBody RatingRequest request) {
+    public RatingDto update(@PathVariable("rating") @Positive(message = "Rating's Id must be positive") long id, @Valid @RequestBody RatingRequest request) {
         log.info("\nUpdating rating {}", id);
         return ratingService.changeRatingData(id, request);
     }

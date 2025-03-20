@@ -68,16 +68,14 @@ public class FilmController {
 
     @PutMapping("/{filmId}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public FilmDto addUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long filmId,
-                                @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
+    public FilmDto addUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long filmId, @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
         log.info("\nAdding of like to film {} from user {}", filmId, userId);
         return filmService.addUsersLike(filmId, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public FilmDto deleteUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long id,
-                                   @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
+    public FilmDto deleteUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long id, @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
         log.info("\nDeleting of like to film {} from user {}", id, userId);
         return filmService.deleteUsersLike(id, userId);
     }

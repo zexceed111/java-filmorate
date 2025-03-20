@@ -33,30 +33,22 @@ public class UserService {
             throw new DuplicateDataException("Friends pair " + l1 + " and " + l2 + " already exists", "");
         }
         userStorage.setNewFriendship(l1, l2);
-        return userStorage.getFriends(l1).stream()
-                .map(UserMapper::mapToUserDto)
-                .toList();
+        return userStorage.getFriends(l1).stream().map(UserMapper::mapToUserDto).toList();
     }
 
     public List<UserDto> getCommonFriends(Long l1, Long l2) {
         userStorage.findById(l1).orElseThrow(() -> new NotFoundException("User id = " + l1 + " not exist", l1));
         userStorage.findById(l2).orElseThrow(() -> new NotFoundException("User id = " + l2 + " not found", l2));
-        return userStorage.getCommonFriends(l1, l2).stream()
-                .map(UserMapper::mapToUserDto)
-                .toList();
+        return userStorage.getCommonFriends(l1, l2).stream().map(UserMapper::mapToUserDto).toList();
     }
 
     public List<UserDto> getFriends(Long l) {
         userStorage.findById(l).orElseThrow(() -> new NotFoundException("User id = " + l + " not exist", l));
-        return userStorage.getFriends(l).stream()
-                .map(UserMapper::mapToUserDto)
-                .toList();
+        return userStorage.getFriends(l).stream().map(UserMapper::mapToUserDto).toList();
     }
 
     public List<UserDto> getAllUsers() {
-        return userStorage.getAllUsers().stream()
-                .map(UserMapper::mapToUserDto)
-                .toList();
+        return userStorage.getAllUsers().stream().map(UserMapper::mapToUserDto).toList();
     }
 
     public UserDto createUser(UserRequest request) {
@@ -69,16 +61,14 @@ public class UserService {
             throw new DuplicateDataException("Login " + request.getLogin() + " is already used.", request);
         }
         User user = UserMapper.mapToUser(request);
-        if (!request.hasName())
-            user.setName(user.getLogin());
+        if (!request.hasName()) user.setName(user.getLogin());
         return UserMapper.mapToUserDto(userStorage.createUser(user));
     }
 
     public UserDto changeUsersData(UserRequest request) {
         //Проверяем данные
         Long id = request.getId();
-        User testUser = userStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь id = " + id + " не найден ", request));
+        User testUser = userStorage.findById(id).orElseThrow(() -> new NotFoundException("Пользователь id = " + id + " не найден ", request));
         testUser = userStorage.findByEmail(request.getEmail()).orElse(null);
         if ((testUser != null) && (testUser.getId() != id)) {
             throw new DuplicateDataException("Email " + request.getEmail() + " is already used.", request);
@@ -92,22 +82,18 @@ public class UserService {
         if (!request.hasName()) {
             user.setName(user.getLogin());
         }
-            return UserMapper.mapToUserDto(userStorage.modifyUser(user));
+        return UserMapper.mapToUserDto(userStorage.modifyUser(user));
 
     }
 
     public List<UserDto> deleteFromFriends(Long l1, Long l2) {
         userStorage.findById(l1).orElseThrow(() -> new NotFoundException("User id = " + l1 + " not exist", l1));
         userStorage.findById(l2).orElseThrow(() -> new NotFoundException("User id = " + l2 + " not found", l2));
-        return userStorage.deleteFriendship(l1, l2)
-                .stream()
-                .map(UserMapper::mapToUserDto)
-                .toList();
+        return userStorage.deleteFriendship(l1, l2).stream().map(UserMapper::mapToUserDto).toList();
     }
 
     public UserDto deleteUser(long id) {
-        User user = userStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь id = " + id + " не найден ", id));
+        User user = userStorage.findById(id).orElseThrow(() -> new NotFoundException("Пользователь id = " + id + " не найден ", id));
         return UserMapper.mapToUserDto(userStorage.deleteUser(user));
     }
 

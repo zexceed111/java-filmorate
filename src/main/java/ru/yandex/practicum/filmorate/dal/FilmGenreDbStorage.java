@@ -31,9 +31,7 @@ public class FilmGenreDbStorage extends BaseRepository<FilmGenre> implements Fil
 
         String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
 
-        List<Object[]> batchArgs = genres.stream()
-                .map(genreId -> new Object[]{id, genreId})
-                .toList();
+        List<Object[]> batchArgs = genres.stream().map(genreId -> new Object[]{id, genreId}).toList();
 
         jdbc.batchUpdate(sql, batchArgs);
     }

@@ -41,6 +41,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     public Film addNewFilm(FilmRequest request) {
         log.warn("\nAdding = {}", request);
+
         Long id = insert(
                 INSERT_FILM_QUERY,
                 request.getName(),
@@ -49,9 +50,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 request.getReleaseDate(),
                 request.getMpa().getId()
         );
-        Film film = findById(id)
-                .orElseThrow(() -> new InternalServerException("Ошибка при чтении данных фильма"));
-        return film;
+
+        return findById(id)
+                .orElseThrow(() -> new IllegalStateException("Ошибка: вставленный фильм с id=" + id + " не найден в БД"));
     }
 
     public Film changeFilm(Film film) {

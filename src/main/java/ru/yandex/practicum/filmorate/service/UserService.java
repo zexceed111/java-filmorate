@@ -89,9 +89,11 @@ public class UserService {
         }
         User user = UserMapper.mapToUser(request);
         user.setId(id);
-        if (!request.hasName())
+        if (!request.hasName()) {
             user.setName(user.getLogin());
-        return UserMapper.mapToUserDto(userStorage.modifyUser(user));
+        }
+            return UserMapper.mapToUserDto(userStorage.modifyUser(user));
+
     }
 
     public List<UserDto> deleteFromFriends(Long l1, Long l2) {

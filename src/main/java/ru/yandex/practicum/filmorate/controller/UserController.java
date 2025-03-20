@@ -51,7 +51,7 @@ public class UserController {
         log.info("\nMaking {} as friend {}", id, friendId);
         if (id == friendId) {
             log.warn("\nNot added friends {} and {} because identifiers are equal", id, friendId);
-            throw new ValidationException("Friends are not added.", "Identifiers have not be equal.");
+            throw new ValidationException("Friends are not added.");
         }
         return userService.makeNewFriendsPair(id, friendId);
     }
@@ -63,7 +63,7 @@ public class UserController {
         log.info("\nDelete {} as friend {}", id, friendId);
         if (id == friendId) {
             log.warn("\nNot deleted friendship between {} and {} because identifiers are equal", id, friendId);
-            throw new ValidationException("Friends are not deleted.", "Identifiers have not be equal.");
+            throw new ValidationException("Friends are not deleted.");
         }
         return userService.deleteFromFriends(id, friendId);
     }
@@ -82,7 +82,7 @@ public class UserController {
         log.info("\nGetting common friends {} and {}", id, otherId);
         if (id == otherId) {
             log.warn("\nList common friends {} and {} is impossible because identifiers are equal", id, otherId);
-            throw new ValidationException("Friends are not found.", "Identifiers have not be equal.");
+            throw new ValidationException("Friends are not found.");
         }
         return userService.getCommonFriends(id, otherId);
     }

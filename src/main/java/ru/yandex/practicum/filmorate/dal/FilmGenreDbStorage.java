@@ -25,12 +25,19 @@ public class FilmGenreDbStorage extends BaseRepository<FilmGenre> implements Fil
 
     @Override
     public void addFilmGenres(Long id, List<Long> genres) {
-        if (genres != null) {
-            for (Long l : genres) {
-                insert(INSERT_FILM_GENRES_QUERY, id, l);
-            }
+        if (genres == null || genres.isEmpty()) {
+            return;
         }
+
+        String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+
+        List<Object[]> batchArgs = genres.stream()
+                .map(genreId -> new Object[]{id, genreId})
+                .toList();
+
+        jdbc.batchUpdate(sql, batchArgs);
     }
+
 
     @Override
     public void deleteGenreOfFilms(long id) {

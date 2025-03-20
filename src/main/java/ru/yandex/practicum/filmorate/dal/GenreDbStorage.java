@@ -69,4 +69,5 @@ public class GenreDbStorage extends BaseRepository<Genre> {
         return findOne(FIND_BY_NAME_QUERY, name);
     }
 
+
 }

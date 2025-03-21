@@ -62,19 +62,35 @@ public class FilmService {
     public FilmDto modifyFilm(FilmRequest request) {
         Long id = request.getId();
         log.warn("Value of {}", id);
-        filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Film " + request + " not found", request));
-        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА"));
+
+        // Проверка существования фильма
+        Film existingFilm = filmStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Film " + id + " not found"));
+
+        // Проверка рейтинга MPA
+        if (request.getMpa() == null || request.getMpa().getId() == null) {
+            throw new ValidationException("Рейтинг MPA обязателен");
+        }
+        Rating mpa = ratingStorage.findById(request.getMpa().getId())
+                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг MPA"));
+
+        // Создаём объект фильма
         Film film = FilmMapper.mapToFilm(request);
         film.setId(id);
-        Set<Genre> genreSet = new HashSet<>();
-        if (request.getGenres() != null) {
+
+        // Обновляем жанры
+        if (request.getGenres() != null && !request.getGenres().isEmpty()) {
             filmGenreStorage.deleteGenreOfFilms(id);
-            genreSet.addAll(request.getGenres());
+            Set<Genre> genreSet = new HashSet<>(request.getGenres());
             filmGenreStorage.addFilmGenres(film.getId(), genreSet.stream().map(Genre::getId).toList());
         }
+
+        // Получаем обновлённые жанры
         List<Genre> genres = genreDbStorage.findByFilmId(film.getId());
+
         return FilmMapper.mapToFilmDtoWithGenre(filmStorage.changeFilm(film), mpa, genres);
     }
+
 
     public FilmDto deleteFilm(Long filmId) {
         Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Not found film with id= " + filmId, filmId));

@@ -133,7 +133,7 @@ public class FilmService {
             log.warn("\nLike of film {} by user {} not exists", filmId, userId);
             throw new NotFoundException("Like of film " + filmId + " by user " + userId + " not exists.", filmId);
         }
-        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new NotFoundException("Не удалось прочитать МПА"));
         return FilmMapper.mapToFilmDto(filmStorage.deleteLike(filmId, userId), mpa);
     }
 

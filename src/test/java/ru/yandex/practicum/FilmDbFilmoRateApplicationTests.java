@@ -4,8 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
+import ru.yandex.practicum.filmorate.FilmorateApplication;
 import ru.yandex.practicum.filmorate.dal.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dto.FilmRequest;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
@@ -19,7 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@JdbcTest
+@SpringBootTest(classes = FilmorateApplication.class)
 @AutoConfigureTestDatabase
 @ComponentScan("ru.yandex.practicum.filmorate")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)

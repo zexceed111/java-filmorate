@@ -6,7 +6,7 @@ import lombok.Getter;
 public class ValidationException extends RuntimeException {
     Object objForBody;
 
-    public ValidationException(String message) {
+    public ValidationException(String message, Object objForBody) {
         super(message);
         this.objForBody = objForBody;
     }

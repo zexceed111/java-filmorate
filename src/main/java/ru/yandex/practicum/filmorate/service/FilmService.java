@@ -45,11 +45,15 @@ public class FilmService {
 
     public FilmDto addNewFilm(FilmRequest request) {
         //Больше подходит NotFound, но тест Postman ожидает ошибку 400
-        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА"));
+        Rating mpa = ratingStorage.findById(request.getMpa().getId())
+                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
         Set<Genre> genreSet = new HashSet<>();
         if (request.getGenres() != null) {
             for (Genre g : request.getGenres()) {
-                genreSet.add(genreDbStorage.findById(g.getId()).orElseThrow(() -> new ValidationException("Ошибочный id жанра")));
+                genreSet.add(
+                        genreDbStorage.findById(g.getId())
+                                .orElseThrow(() -> new ValidationException("Ошибочный id жанра", request))
+                );
             }
         }
         log.warn("\nSet of Long {}", genreSet);
@@ -62,32 +66,18 @@ public class FilmService {
     public FilmDto modifyFilm(FilmRequest request) {
         Long id = request.getId();
         log.warn("Value of {}", id);
-
-        // Проверка существования фильма
-        Film existingFilm = filmStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Film " + id + " not found"));
-
-        // Проверка рейтинга MPA
-        if (request.getMpa() == null || request.getMpa().getId() == null) {
-            throw new ValidationException("Рейтинг MPA обязателен");
-        }
+        filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Film " + request + " not found", request));
         Rating mpa = ratingStorage.findById(request.getMpa().getId())
-                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг MPA"));
-
-        // Создаём объект фильма
+                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
         Film film = FilmMapper.mapToFilm(request);
         film.setId(id);
-
-        // Обновляем жанры
-        if (request.getGenres() != null && !request.getGenres().isEmpty()) {
+        Set<Genre> genreSet = new HashSet<>();
+        if (request.getGenres() != null) {
             filmGenreStorage.deleteGenreOfFilms(id);
-            Set<Genre> genreSet = new HashSet<>(request.getGenres());
+            genreSet.addAll(request.getGenres());
             filmGenreStorage.addFilmGenres(film.getId(), genreSet.stream().map(Genre::getId).toList());
         }
-
-        // Получаем обновлённые жанры
         List<Genre> genres = genreDbStorage.findByFilmId(film.getId());
-
         return FilmMapper.mapToFilmDtoWithGenre(filmStorage.changeFilm(film), mpa, genres);
     }
 

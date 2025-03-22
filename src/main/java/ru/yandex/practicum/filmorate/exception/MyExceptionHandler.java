@@ -30,4 +30,14 @@ public class MyExceptionHandler {
                 str, sElem.getMethodName(), sElem.getLineNumber(), e.getMessage());
         return new ResponseEntity<>(e.getObjForBody(), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(InternalServerException.class)
+    public ResponseEntity<Object> handler(InternalServerException e) {
+        StackTraceElement sElem = e.getStackTrace()[0];
+        String className = sElem.getClassName();
+        String str = className.substring(className.lastIndexOf(".") + 1);
+        log.info("\nClass: {}; Method: {}; Line: {}; \nMessage: {}",
+                str, sElem.getMethodName(), sElem.getLineNumber(), e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

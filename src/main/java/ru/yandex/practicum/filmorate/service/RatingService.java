@@ -23,7 +23,7 @@ public class RatingService {
     private final RatingDbStorage ratingDbStorage;
 
     public RatingDto createRating(RatingRequest request) {
-        if (ratingDbStorage.existsByName(request.getName())) {
+        if (ratingDbStorage.findByName(request.getName()).isPresent()) {
             log.warn("\nNot created rating {}", request);
             throw new DuplicateDataException("Rating " + request.getName() + " already exists.", request);
         }
@@ -32,7 +32,8 @@ public class RatingService {
     }
 
     public RatingDto changeRatingData(long id, RatingRequest request) {
-        ratingDbStorage.findById(id).orElseThrow(() -> new NotFoundException("MPA id = " + id + " not found ", request));
+        ratingDbStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("MPA id = " + id + " not found ", request));
         Rating rating;
         rating = ratingDbStorage.findByName(request.getName()).orElse(null);
         if ((rating != null) && (rating.getId() != id)) {
@@ -44,7 +45,8 @@ public class RatingService {
     }
 
     public RatingDto deleteRating(long id) {
-        Rating rating = ratingDbStorage.findById(id).orElseThrow(() -> new NotFoundException("Rating id = " + id + " not founs ", id));
+        Rating rating = ratingDbStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Rating id = " + id + " not founs ", id));
         return RatingMapper.mapToRatingDto(ratingDbStorage.deleteRating(rating));
     }
 
@@ -53,7 +55,8 @@ public class RatingService {
     }
 
     public RatingDto getRating(long l) {
-        return RatingMapper.mapToRatingDto(ratingDbStorage.findById(l).orElseThrow(() -> new NotFoundException("Rating id = " + l + " not found ", l)));
+        return RatingMapper.mapToRatingDto(ratingDbStorage.findById(l)
+                .orElseThrow(() -> new NotFoundException("Rating id = " + l + " not found ", l)));
     }
 
 }

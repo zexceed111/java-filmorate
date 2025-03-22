@@ -76,7 +76,6 @@ public class FilmService {
         return FilmMapper.mapToFilmDtoWithGenre(filmStorage.changeFilm(film), mpa, genres);
     }
 
-
     public FilmDto deleteFilm(Long filmId) {
         Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Not found film with id= " + filmId, filmId));
         Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
@@ -101,17 +100,13 @@ public class FilmService {
     }
 
     public FilmDto addUsersLike(Long filmId, Long userId) {
-        Film film = filmStorage.findById(filmId).orElseThrow(() ->
-                new NotFoundException("Film " + filmId + " not found", filmId));
-        userStorage.findById(userId).orElseThrow(() ->
-                new NotFoundException("User id = " + userId + " not exist", userId));
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Film " + filmId + " not found", filmId));
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("User id = " + userId + " not exist", userId));
         if (filmStorage.findFilmWithLike(filmId, userId).isPresent()) {
             log.warn("\nLike of film {} by user {} already exists", filmId, userId);
-            throw new DuplicateDataException("Like of film " + filmId + " by user " + userId +
-                    " already exists.", filmId);
+            throw new DuplicateDataException("Like of film " + filmId + " by user " + userId + " already exists.", filmId);
         }
-        Rating mpa = ratingStorage.findById(film.getMpaId())
-                .orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
         return FilmMapper.mapToFilmDto(filmStorage.addLike(filmId, userId), mpa);
     }
 

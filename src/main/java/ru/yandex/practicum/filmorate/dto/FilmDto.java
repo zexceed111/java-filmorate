@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.annotation.Transient;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 
@@ -22,9 +23,11 @@ public class FilmDto {
     private Long duration;
     private Rating mpa;
 
+    @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer count;
 
+    @Transient
     private List<Genre> genres;
 
     public FilmDto(Long id, String name, String description, Long duration, LocalDate releaseDate) {

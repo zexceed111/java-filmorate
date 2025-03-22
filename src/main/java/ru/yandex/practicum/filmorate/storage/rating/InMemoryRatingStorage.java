@@ -44,18 +44,17 @@ public class InMemoryRatingStorage implements RatingStorage {
 
     @Override
     public Optional<Rating> findByName(String name) {
-        return ratingMap.values().stream().filter(rating -> rating.getName().equals(name)).findFirst();
-    }
-
-    @Override
-    public boolean existsByName(String name) {
         return ratingMap.values().stream()
-                .anyMatch(rating -> rating.getName().equals(name));
+                .filter(rating -> rating.getName().equals(name))
+                .findFirst();
     }
-
 
     public long getRatingNextId() {
-        long currentMaxId = ratingMap.keySet().stream().mapToLong(id -> id).max().orElse(0);
+        long currentMaxId = ratingMap.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
         return ++currentMaxId;
     }
 

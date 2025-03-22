@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.FilmRequest;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.*;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -25,7 +25,7 @@ public class FilmController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FilmDto create(@Valid @RequestBody FilmRequest request) {
-        log.debug("\nCreation of {}", request);
+        log.info("\nCreation of {}", request);
         FilmDto fd = filmService.addNewFilm(request);
         log.info("Created {}", fd);
         return fd;
@@ -68,14 +68,16 @@ public class FilmController {
 
     @PutMapping("/{filmId}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public FilmDto addUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long filmId, @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
+    public FilmDto addUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long filmId,
+                                @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
         log.info("\nAdding of like to film {} from user {}", filmId, userId);
         return filmService.addUsersLike(filmId, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public FilmDto deleteUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long id, @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
+    public FilmDto deleteUsersLike(@Valid @PathVariable @Positive(message = "Films id must be positive") long id,
+                                   @Valid @PathVariable @Positive(message = "Users id must be positive") long userId) {
         log.info("\nDeleting of like to film {} from user {}", id, userId);
         return filmService.deleteUsersLike(id, userId);
     }

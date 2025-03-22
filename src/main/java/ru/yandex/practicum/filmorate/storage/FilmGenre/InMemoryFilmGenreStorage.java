@@ -14,7 +14,9 @@ public class InMemoryFilmGenreStorage implements FilmGenreStorage {
 
     @Override
     public List<FilmGenre> getGenresOfFilm(Long id) {
-        return filmGenres.values().stream().filter(filmGenre -> (filmGenre.getFilmId() == id)).toList();
+        return filmGenres.values().stream()
+                .filter(filmGenre -> (filmGenre.getFilmId() == id))
+                .toList();
     }
 
     public void addFilmGenres(Long id, List<Long> values) {
@@ -28,12 +30,17 @@ public class InMemoryFilmGenreStorage implements FilmGenreStorage {
     @Override
     public void deleteGenreOfFilms(long id) {
         for (Long i : filmGenres.keySet()) {
-            if (filmGenres.get(i).getFilmId() == id) filmGenres.remove(i);
+            if (filmGenres.get(i).getFilmId() == id)
+                filmGenres.remove(i);
         }
     }
 
     public long getGenreNextId() {
-        long currentMaxId = filmGenres.keySet().stream().mapToLong(id -> id).max().orElse(0);
+        long currentMaxId = filmGenres.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
         return ++currentMaxId;
     }
 }

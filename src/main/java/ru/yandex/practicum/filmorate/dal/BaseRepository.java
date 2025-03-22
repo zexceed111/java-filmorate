@@ -35,16 +35,18 @@ public class BaseRepository<T> {
         return rowsDeleted > 0;
     }
 
-    protected boolean update(String query, Object... params) {
+    protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
-        // Вернётся true, если хоть что-то обновилось
-        return rowsUpdated > 0;
+        if (rowsUpdated == 0) {
+            throw new InternalServerException("Не удалось обновить данные");
+        }
     }
 
     protected long insert(String query, Object... params) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = connection
+                    .prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             for (int idx = 0; idx < params.length; idx++) {
                 ps.setObject(idx + 1, params[idx]);
             }

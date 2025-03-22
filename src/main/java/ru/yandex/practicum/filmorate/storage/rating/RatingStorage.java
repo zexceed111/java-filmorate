@@ -19,6 +19,4 @@ public interface RatingStorage {
 
     Optional<Rating> findByName(String name);
 
-    boolean existsByName(String name);
-
 }

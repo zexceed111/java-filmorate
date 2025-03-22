@@ -32,7 +32,8 @@ public class GenreService {
     }
 
     public GenreDto changeGenreData(long id, GenreRequest request) {
-        genreDbStorage.findById(id).orElseThrow(() -> new NotFoundException("MPA id = " + id + " not found ", request));
+        genreDbStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("MPA id = " + id + " not found ", request));
         Genre genre;
         genre = genreDbStorage.findByName(request.getName()).orElse(null);
         if ((genre != null) && (genre.getId() != id)) {
@@ -44,7 +45,8 @@ public class GenreService {
     }
 
     public GenreDto deleteGenre(long id) {
-        Genre genre = genreDbStorage.findById(id).orElseThrow(() -> new NotFoundException("Genre id = " + id + " not founs ", id));
+        Genre genre = genreDbStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Genre id = " + id + " not founs ", id));
         return GenreMapper.mapToGenreDto(genreDbStorage.deleteGenre(genre));
     }
 
@@ -53,7 +55,8 @@ public class GenreService {
     }
 
     public GenreDto getGenreById(long l) {
-        return GenreMapper.mapToGenreDto(genreDbStorage.findById(l).orElseThrow(() -> new NotFoundException("Genre id = " + l + " not found ", l)));
+        return GenreMapper.mapToGenreDto(genreDbStorage.findById(l)
+                .orElseThrow(() -> new NotFoundException("Genre id = " + l + " not found ", l)));
     }
 
 }

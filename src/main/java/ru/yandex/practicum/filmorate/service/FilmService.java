@@ -20,7 +20,6 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.rating.RatingStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,37 +44,20 @@ public class FilmService {
     }
 
     public FilmDto addNewFilm(FilmRequest request) {
-        // Проверяем, существует ли рейтинг
-        Rating mpa = ratingStorage.findById(request.getMpa().getId())
-                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
-
-        List<Genre> genres = new ArrayList<>();
-        if (request.getGenres() != null && !request.getGenres().isEmpty()) {
-            // Получаем список всех id жанров из запроса
-            List<Long> genreIds = request.getGenres().stream()
-                    .map(Genre::getId)
-                    .toList();
-
-            // Загружаем все жанры из базы одним запросом
-            genres = genreDbStorage.findAllByIds(genreIds);
-
-            // Проверяем, что все переданные жанры найдены
-            if (genres.size() != genreIds.size()) {
-                throw new ValidationException("Ошибочный id жанра", request);
+        //Больше подходит NotFound, но тест Postman ожидает ошибку 400
+        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
+        Set<Genre> genreSet = new HashSet<>();
+        if (request.getGenres() != null) {
+            for (Genre g : request.getGenres()) {
+                genreSet.add(genreDbStorage.findById(g.getId()).orElseThrow(() -> new ValidationException("Ошибочный id жанра", request)));
             }
         }
-
-        log.warn("\nGenres: {}", genres);
-
-        // Добавляем фильм
+        log.warn("\nSet of Long {}", genreSet);
         Film film = filmStorage.addNewFilm(request);
-
-        // Добавляем связи фильм-жанры
-        filmGenreStorage.addFilmGenres(film.getId(), genres.stream().map(Genre::getId).toList());
-
+        filmGenreStorage.addFilmGenres(film.getId(), genreSet.stream().map(Genre::getId).toList());
+        List<Genre> genres = genreDbStorage.findByFilmId(film.getId());
         return FilmMapper.mapToFilmDtoWithGenre(film, mpa, genres);
     }
-
 
     public FilmDto modifyFilm(FilmRequest request) {
         Long id = request.getId();

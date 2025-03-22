@@ -45,15 +45,11 @@ public class FilmService {
 
     public FilmDto addNewFilm(FilmRequest request) {
         //Больше подходит NotFound, но тест Postman ожидает ошибку 400
-        Rating mpa = ratingStorage.findById(request.getMpa().getId())
-                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
+        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
         Set<Genre> genreSet = new HashSet<>();
         if (request.getGenres() != null) {
             for (Genre g : request.getGenres()) {
-                genreSet.add(
-                        genreDbStorage.findById(g.getId())
-                                .orElseThrow(() -> new ValidationException("Ошибочный id жанра", request))
-                );
+                genreSet.add(genreDbStorage.findById(g.getId()).orElseThrow(() -> new ValidationException("Ошибочный id жанра", request)));
             }
         }
         log.warn("\nSet of Long {}", genreSet);
@@ -67,8 +63,7 @@ public class FilmService {
         Long id = request.getId();
         log.warn("Value of {}", id);
         filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Film " + request + " not found", request));
-        Rating mpa = ratingStorage.findById(request.getMpa().getId())
-                .orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
+        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
         Film film = FilmMapper.mapToFilm(request);
         film.setId(id);
         Set<Genre> genreSet = new HashSet<>();

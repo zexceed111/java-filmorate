@@ -6,8 +6,10 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component("genreDbStorage")
 public class GenreDbStorage extends BaseRepository<Genre> {
@@ -67,6 +69,19 @@ public class GenreDbStorage extends BaseRepository<Genre> {
 
     public Optional<Genre> findByName(String name) {
         return findOne(FIND_BY_NAME_QUERY, name);
+    }
+    public List<Genre> findAllByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String inSql = ids.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+
+        String sql = "SELECT * FROM genre WHERE id IN (" + inSql + ")";
+
+        return jdbc.query(sql, ids.toArray(), mapper);
     }
 
 }

@@ -11,8 +11,6 @@ public interface RatingStorage {
 
     Rating modifyRating(Rating rating);
 
-    boolean existsByName(String name);
-
     Rating deleteRating(Rating rating);
 
     List<Rating> getAllRating();

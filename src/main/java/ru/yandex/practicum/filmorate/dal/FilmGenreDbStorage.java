@@ -15,7 +15,7 @@ import java.util.List;
 public class FilmGenreDbStorage extends BaseRepository<FilmGenre> implements FilmGenreStorage {
 
     private static final String GET_FILMS_GENRES_QUERY = "SELECT * FROM film_genre WHERE film_id = ?";
-    private static final String INSERT_FILM_GENRES_QUERY = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+    private static final String INSERT_FILM_GENRES_QUERY = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
     private static final String DELETE_FILMS_GENRES_QUERY = "DELETE FROM film_genre WHERE film_id = ?";
 
     public FilmGenreDbStorage(JdbcTemplate jdbc, RowMapper<FilmGenre> mapper) {

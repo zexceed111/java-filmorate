@@ -25,7 +25,7 @@ public class FilmController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public FilmDto create(@Valid @RequestBody FilmRequest request) {
-        log.info("\nCreation of {}", request);
+        log.debug("\nCreation of {}", request);
         FilmDto fd = filmService.addNewFilm(request);
         log.info("Created {}", fd);
         return fd;

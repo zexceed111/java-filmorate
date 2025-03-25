@@ -23,7 +23,7 @@ public class RatingService {
     private final RatingDbStorage ratingDbStorage;
 
     public RatingDto createRating(RatingRequest request) {
-        if (ratingDbStorage.existsByName(request.getName())) {
+        if (ratingDbStorage.findByName(request.getName()).isPresent()) {
             log.warn("\nNot created rating {}", request);
             throw new DuplicateDataException("Rating " + request.getName() + " already exists.", request);
         }

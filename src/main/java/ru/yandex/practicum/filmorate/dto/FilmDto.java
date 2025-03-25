@@ -27,7 +27,6 @@ public class FilmDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer count;
 
-    @Transient
     private List<Genre> genres;
 
     public FilmDto(Long id, String name, String description, Long duration, LocalDate releaseDate) {

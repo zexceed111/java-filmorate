@@ -20,6 +20,7 @@ public class RatingDbStorage extends BaseRepository<Rating> implements RatingSto
 
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM rating WHERE id = ?";
     private static final String FIND_BY_NAME_QUERY = "SELECT * FROM rating WHERE name = ?";
+    private static final String FIND_BY_NAME = "SELECT EXISTS(SELECT 1 FROM rating WHERE name = ?)";
 
     public RatingDbStorage(JdbcTemplate jdbc, RowMapper<Rating> mapper) {
         super(jdbc, mapper);
@@ -45,6 +46,11 @@ public class RatingDbStorage extends BaseRepository<Rating> implements RatingSto
                 rating.getId()
         );
         return rating;
+    }
+
+    @Override
+    public boolean existsByName(String name) {
+        return Boolean.TRUE.equals(jdbc.queryForObject(FIND_BY_NAME, Boolean.class, name));
     }
 
     @Override

@@ -44,7 +44,6 @@ public class FilmService {
     }
 
     public FilmDto addNewFilm(FilmRequest request) {
-        //Больше подходит NotFound, но тест Postman ожидает ошибку 400
         Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new NotFoundException("Указан несуществующий рейтинг МПА", request));
         Set<Genre> genreSet = new HashSet<>();
         if (request.getGenres() != null) {

@@ -1,84 +1,123 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.GenreDbStorage;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.dto.FilmRequest;
+import ru.yandex.practicum.filmorate.exception.DuplicateDataException;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.storage.FilmGenre.FilmGenreStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.rating.RatingStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class FilmService {
-    private static final LocalDate cinemaBirthday = LocalDate.of(1895, 12, 28);
-    private static final int maxDescriptionLength = 200;
 
-    private final InMemoryFilmStorage inMemoryFilmStorage;
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
+    private final FilmGenreStorage filmGenreStorage;
+    private final RatingStorage ratingStorage;
+    private final GenreDbStorage genreDbStorage;
 
-    public List<Film> getAll() {
-        return inMemoryFilmStorage.getAllFilms().stream().toList();
+    @Autowired
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmGenreDbStorage") FilmGenreStorage filmGenreStorage, @Qualifier("ratingDbStorage") RatingStorage ratingStorage, GenreDbStorage genreDbStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+        this.filmGenreStorage = filmGenreStorage;
+        this.ratingStorage = ratingStorage;
+        this.genreDbStorage = genreDbStorage;
     }
 
-    public List<Film> getPopularFilms(long count) {
-        log.info("Fetching top {} popular films", count);
-        return inMemoryFilmStorage.getPopularFilms(count);
+    public FilmDto addNewFilm(FilmRequest request) {
+        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new NotFoundException("Указан несуществующий рейтинг МПА", request));
+        Set<Genre> genreSet = new HashSet<>();
+        if (request.getGenres() != null) {
+            for (Genre g : request.getGenres()) {
+                genreSet.add(genreDbStorage.findById(g.getId()).orElseThrow(() -> new NotFoundException("Ошибочный id жанра", request)));
+            }
+        }
+        log.warn("\nSet of Long {}", genreSet);
+        Film film = filmStorage.addNewFilm(request);
+        filmGenreStorage.addFilmGenres(film.getId(), genreSet.stream().map(Genre::getId).toList());
+        List<Genre> genres = genreDbStorage.findByFilmId(film.getId());
+        return FilmMapper.mapToFilmDtoWithGenre(film, mpa, genres);
     }
 
-    public Film addNewFilm(Film newFilm) {
-        newFilm.setId(inMemoryFilmStorage.getNextId());
-        log.debug("Adding new film: {}", newFilm);
-        return inMemoryFilmStorage.addNewFilm(newFilm.getId(), newFilm);
+    public FilmDto modifyFilm(FilmRequest request) {
+        Long id = request.getId();
+        log.warn("Value of {}", id);
+        filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Film " + request + " not found", request));
+        Rating mpa = ratingStorage.findById(request.getMpa().getId()).orElseThrow(() -> new ValidationException("Указан несуществующий рейтинг МПА", request));
+        Film film = FilmMapper.mapToFilm(request);
+        film.setId(id);
+        Set<Genre> genreSet = new HashSet<>();
+        if (request.getGenres() != null) {
+            filmGenreStorage.deleteGenreOfFilms(id);
+            genreSet.addAll(request.getGenres());
+            filmGenreStorage.addFilmGenres(film.getId(), genreSet.stream().map(Genre::getId).toList());
+        }
+        List<Genre> genres = genreDbStorage.findByFilmId(film.getId());
+        return FilmMapper.mapToFilmDtoWithGenre(filmStorage.changeFilm(film), mpa, genres);
     }
 
-    public Film modifyFilm(Film film) throws NotFoundException {
-        if (film.getId() == null) {
-            throw new NotFoundException("Id фильма должен быть указан: " + film, film);
-        }
-
-        Film preparedFilm = new Film();
-        preparedFilm.setId(film.getId());
-
-        if (film.getName() != null && !film.getName().isBlank()) {
-            preparedFilm.setName(film.getName());
-        }
-
-        if (film.getReleaseDate() != null && !film.getReleaseDate().isBefore(cinemaBirthday)) {
-            preparedFilm.setReleaseDate(film.getReleaseDate());
-        } else {
-            log.warn("Invalid release date ignored: {}", film.getReleaseDate());
-        }
-
-        if (film.getDescription() != null && film.getDescription().length() <= maxDescriptionLength) {
-            preparedFilm.setDescription(film.getDescription());
-        }
-
-        if (film.getDuration() != null && film.getDuration() > 0) {
-            preparedFilm.setDuration(film.getDuration());
-        }
-
-        log.info("Фильм успешно обновлен: {}", preparedFilm);
-        return inMemoryFilmStorage.changeFilm(preparedFilm);
+    public FilmDto deleteFilm(Long filmId) {
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Not found film with id= " + filmId, filmId));
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        return FilmMapper.mapToFilmDto(filmStorage.deleteFilm(film), mpa);
     }
 
-    public void deleteFilm(Long filmId) throws NotFoundException {
-        if (inMemoryFilmStorage.films.containsKey(filmId)) {
-            inMemoryFilmStorage.deleteFilm(filmId);
-        } else {
-            throw new NotFoundException("Не найден фильм с идентификатором = " + filmId, filmId);
+    public List<FilmDto> getAll() {
+        return filmStorage.getAll().stream().map(film -> FilmMapper.mapToFilmDto(film, ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА")))).toList();
+    }
+
+    public FilmDto getFilm(long id) {
+        Film film = filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Film id " + id + " not found", id));
+        log.warn("Found {}", film);
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        List<Genre> genres = genreDbStorage.findByFilmId(film.getId());
+        return FilmMapper.mapToFilmDtoWithGenre(film, mpa, genres);
+    }
+
+    public List<FilmDto> getPopularFilms(long count) {
+        return filmStorage.getPopular(count).stream().map(film -> FilmMapper.mapToFilmDto(film, ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА")))).toList();
+
+    }
+
+    public FilmDto addUsersLike(Long filmId, Long userId) {
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Film " + filmId + " not found", filmId));
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("User id = " + userId + " not exist", userId));
+        if (filmStorage.findFilmWithLike(filmId, userId).isPresent()) {
+            log.warn("\nLike of film {} by user {} already exists", filmId, userId);
+            throw new DuplicateDataException("Like of film " + filmId + " by user " + userId + " already exists.", filmId);
         }
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        return FilmMapper.mapToFilmDto(filmStorage.addLike(filmId, userId), mpa);
     }
 
-    public List<User> addUsersLike(Long filmId, Long userId) throws NotFoundException {
-        return inMemoryFilmStorage.addLike(filmId, userId);
-    }
-
-    public List<User> deleteUsersLike(Long filmId, Long userId) throws NotFoundException {
-        return inMemoryFilmStorage.deleteLike(filmId, userId);
+    public FilmDto deleteUsersLike(Long filmId, Long userId) {
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException("Film " + filmId + " not found", filmId));
+        userStorage.findById(userId).orElseThrow(() -> new NotFoundException("User id = " + userId + " not exist", userId));
+        if (filmStorage.findFilmWithLike(filmId, userId).isEmpty()) {
+            log.warn("\nLike of film {} by user {} not exists", filmId, userId);
+            throw new NotFoundException("Like of film " + filmId + " by user " + userId + " not exists.", filmId);
+        }
+        Rating mpa = ratingStorage.findById(film.getMpaId()).orElseThrow(() -> new InternalServerException("Не удалось прочитать МПА"));
+        return FilmMapper.mapToFilmDto(filmStorage.deleteLike(filmId, userId), mpa);
     }
 
 }

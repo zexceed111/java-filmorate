@@ -89,8 +89,9 @@ public class UserService {
         }
         User user = UserMapper.mapToUser(request);
         user.setId(id);
-        if (!request.hasName())
+        if (!request.hasName()) {
             user.setName(user.getLogin());
+        }
         return UserMapper.mapToUserDto(userStorage.modifyUser(user));
     }
 

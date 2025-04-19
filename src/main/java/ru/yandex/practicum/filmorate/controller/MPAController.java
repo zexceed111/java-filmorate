@@ -5,24 +5,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.services.FilmService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("genres")
+@RequestMapping("/mpa")
 @RequiredArgsConstructor
-public class GenreController {
+public class MPAController {
     final FilmService filmService;
 
-    @GetMapping("/{id}")
-    public Genre getGenreById(@PathVariable("id") int id) {
-        return filmService.findGenreById(id);
+    @GetMapping
+    public List<MPA> getMpa() {
+        return filmService.findAllMpa();
     }
 
-    @GetMapping
-    public List<Genre> getGenres() {
-        return filmService.findAllGenres();
+    @GetMapping("/{id}")
+    public MPA getMpaById(@PathVariable("id") int id) {
+        return filmService.findMpaById(id);
     }
 }
